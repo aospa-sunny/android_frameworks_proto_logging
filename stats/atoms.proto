@@ -662,13 +662,18 @@ message Atom {
             [(module) = "framework"];
         HotwordDetectorEvents hotword_detector_events = 434
             [(module) = "framework"];
-        // 435, 436 not been used in this branch.
+        AdServicesApiCalled ad_services_api_called =
+            435 [(module) = "adservices", (truncate_timestamp) = true];
+        AdServicesMeasurementReportsUploaded ad_services_mesurement_reports_uploaded =
+            436 [(module) = "adservices", (truncate_timestamp) = true];
         BootCompletedBroadcastCompletionLatencyReported boot_completed_broadcast_completion_latency_reported =
-            437 [(module) = "framework"];
+                437 [(module) = "framework"];
         ContactsIndexerUpdateStatsReported contacts_indexer_update_stats_reported = 440
             [(module) = "appsearch"];
-        AppBackgroundRestrictionsInfo app_background_restrictions_info = 441
-            [(module) = "framework"];
+        AppBackgroundRestrictionsInfo app_background_restrictions_info =
+            441 [(module) = "framework"];
+        MmsSmsProviderGetThreadIdFailed mms_sms_provider_get_thread_id_failed = 442 [(module) = "telephony"];
+        MmsSmsDatabaseHelperOnUpgradeFailed mms_sms_database_helper_on_upgrade_failed = 443 [(module) = "telephony"];
         PermissionReminderNotificationInteracted permission_reminder_notification_interacted =
             444 [(module) = "permissioncontroller"];
         RecentPermissionDecisionsInteracted recent_permission_decisions_interacted =
@@ -688,7 +693,10 @@ message Atom {
         UwbDeviceErrorReported uwb_device_error_reported = 456 [(module) = "uwb"];
         IsolatedCompilationScheduled isolated_compilation_scheduled = 457 [(module) = "art"];
         IsolatedCompilationEnded isolated_compilation_ended = 458 [(module) = "art"];
+        OnsOpportunisticEsimProvisioningComplete ons_opportunistic_esim_provisioning_complete = 459 [(module) = "ons"];
+        SystemServerPreWatchdogOccurred system_server_pre_watchdog_occurred = 460 [(module) = "framework"];
         TelephonyAnomalyDetected telephony_anomaly_detected = 461 [(module) = "telephony"];
+        LetterboxPositionChanged letterbox_position_changed = 462 [(module) = "framework"];
 
         // StatsdStats tracks platform atoms with ids upto 500.
         // Update StatsdStats::kMaxPushedAtomId when atom ids here approach that value.
@@ -1435,6 +1443,7 @@ message WifiSetupFailureCrashReported {
     // Type of failure
     optional Type type= 1;
 }
+
 
 /**
  * Logs when memory stats of a process is reported.
@@ -4802,10 +4811,51 @@ message AppCompatStateChanged {
         LETTERBOXED_FOR_ASPECT_RATIO = 5;
     }
 
+    // Position of the letterbox
+    enum Position {
+        UNKNOWN_POSITION = 0;
+        NOT_LETTERBOXED_POSITION = 1;
+        CENTER = 2;
+        LEFT = 3;
+        RIGHT = 4;
+        TOP = 5;
+        BOTTOM = 6;
+    }
+
     // The state that was entered.
     optional State state = 2 [
       (state_field_option).exclusive_state = true,
       (state_field_option).nested = false];
+
+    optional Position letterbox_position = 3;
+}
+
+/**
+ * Logs when an app that is letterboxed changes position.
+ *
+ * Logged from:
+ *   frameworks/base/services/core/java/com/android/server/wm/ActivityMetricsLogger.java
+ */
+
+message LetterboxPositionChanged {
+    // UID of the package that is letterboxed.
+    optional int32 uid = 1 [(is_uid) = true];
+
+    // The new position of the letterbox
+    enum PositionChange {
+        UNKNOWN = 0;
+        CENTER_TO_LEFT = 1;
+        LEFT_TO_CENTER = 2;
+        CENTER_TO_RIGHT= 3;
+        RIGHT_TO_CENTER = 4;
+        CENTER_TO_TOP = 5;
+        TOP_TO_CENTER = 6;
+        CENTER_TO_BOTTOM = 7;
+        BOTTOM_TO_CENTER = 8;
+    }
+
+    optional PositionChange position_change = 2;
+
 }
 
 /**
@@ -5949,6 +5999,14 @@ message AppMovedStorageReported {
  */
 message SystemServerWatchdogOccurred {
     optional string subject = 1;
+}
+
+/**
+ * Logs when system server pre-watchdog occurs.
+ * Logged from:
+ *      frameworks/base/services/core/java/com/android/server/Watchdog.java
+ */
+message SystemServerPreWatchdogOccurred {
 }
 
 /**
@@ -14779,6 +14837,8 @@ message UserLifecycleEventOccurred {
 /**
  * The UserInfo information about an Android user (as used in UserManager multiuser).
  *
+ * Currently, we do not include information about user 0, since it is uninteresting.
+ *
  * This will be pulled from
  *     frameworks/base/services/core/java/com/android/server/pm/UserManagerService.java
  */
@@ -14802,7 +14862,9 @@ message UserInfo {
     // according to System.currentTimeMillis
     optional int64 last_logged_in_time_millis = 6;
 
-    // True if user is currently running and unlocked
+    // True if user is currently running and unlocked.
+    // Note that this is NOT synonymous with being the 'current' user. Multiple users may be
+    // running unlocked, with one in the foreground and others running in the background.
     optional bool is_user_running_unlocked = 7;
 }
 
@@ -19962,6 +20024,78 @@ message HotwordDetectorEvents {
 }
 
 /**
+ * Logs when an AdServices api is called.
+ */
+message AdServicesApiCalled {
+    // The name of the api that was called.
+    // Can be classified as one of the three:
+    //
+    // Targeting
+    //  * GetTopics()
+    //
+    // Remarketing
+    //  * RegisterGroup()
+    //  * LeaveGroup()
+    //  * RunAuction()
+    //
+    // Measurement - client side
+    //   * register()
+    //   * deleteRegistrations()
+
+
+    enum AdServicesApiClassType {
+        UNKNOWN = 0;
+        TARGETING = 1;
+        REMARKETING = 2;
+        MEASUREMENT = 3;
+    }
+
+    enum AdServicesApiName {
+        API_NAME_UNKNOWN = 0;
+        GET_TOPICS = 1;
+        REGISTER_GROUP = 2;
+        LEAVE_GROUP = 3;
+        RUN_AUCTION = 4;
+        REGISTER = 5;
+        DELETE_REGISTRATIONS = 6;
+    }
+
+    optional AdServicesApiClassType api_class = 1;
+
+    // The actual name of the api within the 3 classes described above.
+    optional AdServicesApiName  api_name = 2;
+
+    optional string app_package_name = 3;
+    optional string sdk_package_name = 4;
+
+    optional int32 latency_millis = 5;
+
+    // response_code is the error/failure code for the given api.
+    optional int32 response_code = 6;
+}
+
+/**
+ * Logs when an AdServices measurement reports are being uploaded.
+ */
+message AdServicesMeasurementReportsUploaded {
+    enum ReportType {
+        UNKNOWN_REPORT = 0;
+        EVENT = 1;
+        AGGREGATE = 2;
+    }
+
+    optional ReportType type = 1;
+
+    enum ReportUploadStatus {
+        UNKNOWN_STATUS = 0;
+        SUCCESS = 1;
+        FAILURE = 2;
+    }
+
+    optional ReportUploadStatus response_code = 2;
+}
+
+/**
  * Log the duration of executing all receivers of LOCKED_BOOT_COMPLETED or BOOT_COMPLETED broadcast.
  * The dispatch latency is the dispatchTime - enqueueTime.
  * The completion latency is the completeTime - enqueueTime.
@@ -19987,6 +20121,51 @@ message BootCompletedBroadcastCompletionLatencyReported {
 
     optional int32 user_id = 6;
     optional UserLifecycleJourneyReported.UserType user_type = 7;
+}
+
+/**
+ * Log that the permission reminder notification has been displayed or clicked.
+ */
+message PermissionReminderNotificationInteracted {
+    // id which identifies single session of user interacting with permission
+    // controller
+    optional int64 session_id = 1;
+
+    enum Result {
+        UNDEFINED = 0;
+        // notification was presented to the user
+        NOTIFICATION_PRESENTED = 1;
+        // notification was clicked by the user
+        NOTIFICATION_CLICKED = 2;
+    }
+
+    // View / interaction recorded
+    optional Result result = 2;
+}
+
+/**
+ * Log that the user has interacted with the permission decision screen.
+ */
+message RecentPermissionDecisionsInteracted {
+    // id which identifies single session of user interacting with permission
+    // controller
+    optional int64 session_id = 1;
+
+    enum Action {
+        ACTION_UNKNOWN = 0;
+        SCREEN_VIEWED = 1;
+        REVIEW_DECISION = 2;
+        VIEW_ALL_CLICKED = 3;
+    }
+
+    // Action taken on the recent permission decisions page.
+    optional Action action = 2;
+
+    // Uid of the package for the permission decision being reviewed
+    optional int32 uid = 3 [(is_uid) = true];
+
+    // Name of the permission for the permission decision being reviewed.
+    optional string permission_group_name = 4;
 }
 
 /**
@@ -20175,48 +20354,39 @@ message AppBackgroundRestrictionsInfo {
 }
 
 /**
- * Log that the permission reminder notification has been displayed or clicked.
+ * Logs failure reason when MmsSmsProvider#getThreadId fails to return a threadId
  */
-message PermissionReminderNotificationInteracted {
-    // id which identifies single session of user interacting with permission
-    // controller
-    optional int64 session_id = 1;
-
-    enum Result {
-        UNDEFINED = 0;
-        // notification was presented to the user
-        NOTIFICATION_PRESENTED = 1;
-        // notification was clicked by the user
-        NOTIFICATION_CLICKED = 2;
+message MmsSmsProviderGetThreadIdFailed {
+    enum FailureCode {
+        FAILURE_UNKNOWN = 0;
+        // Did not return a threadId due to recipients being passed in
+        FAILURE_NO_RECIPIENTS = 1;
+        FAILURE_FIND_OR_CREATE_THREAD_ID_SQL = 2;
+        // Found more than one threadId for the given of recipients
+        FAILURE_MULTIPLE_THREAD_IDS_FOUND = 3;
     }
 
-    // View / interaction recorded
-    optional Result result = 2;
+    optional FailureCode failure_code = 1;
 }
 
 /**
- * Log that the user has interacted with the permission decision screen.
+ * Logs failure reason when MmsSmsDatabaseHelperOnUpgradeFailed fails on an upgrade step
  */
-message RecentPermissionDecisionsInteracted {
-    // id which identifies single session of user interacting with permission
-    // controller
-    optional int64 session_id = 1;
-
-    enum Action {
-        ACTION_UNKNOWN = 0;
-        SCREEN_VIEWED = 1;
-        REVIEW_DECISION = 2;
-        VIEW_ALL_CLICKED = 3;
+message MmsSmsDatabaseHelperOnUpgradeFailed {
+    enum FailureCode {
+        FAILURE_UNKNOWN = 0;
+        FAILURE_IO_EXCEPTION = 1;
+        FAILURE_SECURITY_EXCEPTION = 2;
+        FAILURE_SQL_EXCEPTION = 3;
     }
 
-    // Action taken on the recent permission decisions page.
-    optional Action action = 2;
-
-    // Uid of the package for the permission decision being reviewed
-    optional int32 uid = 3 [(is_uid) = true];
-
-    // Name of the permission for the permission decision being reviewed.
-    optional string permission_group_name = 4;
+    // Database version being upgraded from
+    optional int32 old_version = 1;
+    // Database version being upgraded to
+    optional int32 current_version = 2;
+    // Version number of the database upgrade step that failed
+    optional int32 upgrade_failed_to_version = 3;
+    optional FailureCode failure_code = 4;
 }
 
 /**
@@ -20238,24 +20408,9 @@ message TaskManagerEventReported {
     optional int64 time_running_ms = 3;
 }
 
+
 /**
- * Logs when text and reading options changed.
- *
- * Logged from:
- *   packages/apps/Settings/src/com/android/settings/accessibility
- */
-message AccessibilityTextReadingOptionsChanged {
-    // The item name of the accessibility feature "Text and Reading Options".
-    optional android.stats.accessibility.TextReadingOption name = 1;
-
-    // The status value of the item of the accessibility feature "Text and Reading Options".
-    optional int32 value = 2;
-
-    // The entry point from which page.
-    optional android.stats.accessibility.TextReadingEntry entry_point = 3;
-}
-
-/** Log the CompanionDeviceManager associations are created by various device
+ * Log the CompanionDeviceManager associations are created by various device
  * profiles
  *
  * Logged from:
@@ -20282,6 +20437,79 @@ message CdmAssociationAction {
 
     // Name of the CDM Association Request profiles.
     optional DeviceProfile device_profile = 2;
+}
+
+/**
+ * Logs when text and reading options changed.
+ *
+ * Logged from:
+ *   packages/apps/Settings/src/com/android/settings/accessibility
+ */
+message AccessibilityTextReadingOptionsChanged {
+    // The item name of the accessibility feature "Text and Reading Options".
+    optional android.stats.accessibility.TextReadingOption name = 1;
+
+    // The status value of the item of the accessibility feature "Text and Reading Options".
+    optional int32 value = 2;
+
+    // The entry point from which page.
+    optional android.stats.accessibility.TextReadingEntry entry_point = 3;
+}
+
+/*
+ * Pushed atom logged by ONS service.
+ */
+message OnsOpportunisticEsimProvisioningComplete {
+    enum ResultCode {
+      // Unknown
+      RESULT_UNKNOWN = 0;
+
+      // Operation was successful.
+      RESULT_SUCCESS = 1;
+
+      // Device capabilities not met such as eSIM and MultiSIM not supported.
+      RESULT_DEVICE_NOT_CAPABLE = 2;
+
+      // Internet connection is not available while trying to download opportunistic eSIM.
+      RESULT_INTERNET_NOT_AVAILABLE = 3;
+
+      // Error occurred while switching device from Single to MultiSIM mode.
+      RESULT_SWITCH_TO_MULTISIM_FAILED = 4;
+
+      // Connection error occurred while downloading opportunistic eSIM from SMDP server.
+      RESULT_CONNECTION_ERROR = 5;
+
+      // Download failed because there is no sufficient storage available in eUICC memory.
+      RESULT_MEMORY_FULL = 6;
+
+      // Installation of downloaded eSIM failed.
+      RESULT_INSTALL_ESIM_PROFILE_FAILED = 7;
+
+      // Unresolvable errors such as Invalid SMDP address or activation code.
+      RESULT_UNRESOLVABLE_ERROR = 8;
+
+      //Auto provisioning disabled
+      RESULT_AUTO_PROVISIONING_DISABLED = 9;
+    }
+
+    // CBRS carrier id. Filled only while reporting failure cases.
+    optional int32 carrier_id = 1;
+
+    // carrier id of the opportunistic eSIM downloaded from the SMDP server.
+    //Filled only while reporting failure cases.
+    optional int32 opportunistic_esim_carrier_id = 2;
+
+    // Flag to indicate that the data connection was used for downloading.
+    optional bool is_mobile_data_used = 3;
+
+    // Error code occurred during the above operation.
+    optional ResultCode error_code = 4;
+
+    // Retry count of the above operation.
+    optional int32 retry_count = 5;
+
+    // Detailed error code.
+    optional int32 detailed_error_code = 6;
 }
 
 /**
