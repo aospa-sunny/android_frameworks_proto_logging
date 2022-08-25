@@ -3356,6 +3356,26 @@ enum PageId {
     // CATEGORY: SETTINGS
     // OS: T
     DIALOG_RESET_SETTINGS = 1924;
+
+    // OPEN: Settings > Developer Options > Predictive gesture animations > Click
+    // CATEGORY: SETTINGS
+    // OS: T
+    DIALOG_BACK_ANIMATIONS = 1925;
+
+    // OPEN: Le audio broadcast dialog > Find a broadcast > Scan QR code
+    // CATEGORY: SETTINGS
+    // OS: T
+    LE_AUDIO_BROADCAST_SCAN_QR_CODE = 1926;
+
+    // OPEN: Settings > About phone > Limited Warranty
+    // CATEGORY: SETTINGS
+    // OS: T
+    LIMITED_WARRANTY_COUNTRY_LIST = 1927;
+
+    // OPEN: Settings > About phone > Limited Warranty > Click any country
+    // CATEGORY: SETTINGS
+    // OS: T
+    LIMITED_WARRANTY_DETAILS = 1928;
 }
 
 // Battery Saver schedule types.
