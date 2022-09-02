@@ -17,6 +17,8 @@
 syntax = "proto2";
 
 package android.os.statsd;
+
+option optimize_for = CODE_SIZE;
 option java_package = "com.android.os";
 option java_outer_classname = "AtomsProto";
 
@@ -41,6 +43,7 @@ import "frameworks/proto_logging/stats/enums/hardware/sensor/assist/enums.proto"
 import "frameworks/proto_logging/stats/enums/hotword/enums.proto";
 import "frameworks/proto_logging/stats/enums/media/audio/enums.proto";
 import "frameworks/proto_logging/stats/enums/media/enums.proto";
+import "frameworks/proto_logging/stats/enums/mms/enums.proto";
 import "frameworks/proto_logging/stats/enums/nearby/enums.proto";
 import "frameworks/proto_logging/stats/enums/net/enums.proto";
 import "frameworks/proto_logging/stats/enums/neuralnetworks/enums.proto";
@@ -66,6 +69,7 @@ import "frameworks/proto_logging/stats/enums/stats/launcher/launcher.proto";
 import "frameworks/proto_logging/stats/enums/stats/location/location_enums.proto";
 import "frameworks/proto_logging/stats/enums/stats/mediametrics/mediametrics.proto";
 import "frameworks/proto_logging/stats/enums/stats/mediaprovider/mediaprovider_enums.proto";
+import "frameworks/proto_logging/stats/enums/stats/privacysignals/enums.proto";
 import "frameworks/proto_logging/stats/enums/stats/safetycenter/enums.proto";
 import "frameworks/proto_logging/stats/enums/stats/storage/storage_enums.proto";
 import "frameworks/proto_logging/stats/enums/stats/style/style_enums.proto";
@@ -716,12 +720,24 @@ message Atom {
         ServiceRequestEventReported service_request_event_reported = 476 [(module) = "framework"];
         ProviderAcquisitionEventReported provider_acquisition_event_reported =
                 477 [(module) = "framework"];
+        BluetoothDeviceNameReported bluetooth_device_name_reported = 478 [(module) = "bluetooth"];
+        CellBroadcastConfigUpdated cb_config_updated = 479 [(module) = "cellbroadcast"];
+        CellBroadcastModuleError cb_module_error = 480 [(module) = "cellbroadcast"];
+        CellBroadcastServiceFeature cb_service_feature= 481 [(module) = "cellbroadcast"];
+        CellBroadcastReceiverFeature cb_receiver_feature= 482 [(module) = "cellbroadcast"];
+        JSScriptEngineLatencyReported jsscriptengine_latency_reported = 483 [(module) = "adservices"];
+        PrivacySignalNotificationInteraction privacy_signal_notification_interaction = 484 [(module) = "permissioncontroller"];
+        PrivacySignalIssueCardInteraction privacy_signal_issue_card_interaction = 485 [(module) = "permissioncontroller"];
+        PrivacySignalsJobFailure privacy_signals_job_failure = 486 [(module) = "permissioncontroller"];
+        VibrationReported vibration_reported = 487 [(module) = "framework"];
+        SandboxApiCalled sandbox_api_called = 488 [(module) = "adservices"];
+        UwbStartRanging uwb_ranging_start = 489 [(module) = "uwb"];
         // StatsdStats tracks platform atoms with ids upto 750.
         // Update StatsdStats::kMaxPushedAtomId when atom ids here approach that value.
     }
 
     // Pulled events will start at field 10000.
-    // Next: 10153
+    // Next: 10160
     oneof pulled {
         WifiBytesTransfer wifi_bytes_transfer = 10000 [(module) = "framework"];
         WifiBytesTransferByFgBg wifi_bytes_transfer_by_fg_bg = 10001 [(module) = "framework"];
@@ -910,12 +926,14 @@ message Atom {
         DeviceTelephonyProperties device_telephony_properties = 10154 [(module) = "telephony"];
         RemoteKeyProvisioningErrorCounts remote_key_provisioning_error_counts = 10155 [(module) = "remoteprovisioner"];
         SafetyState safety_state = 10156 [(module) = "permissioncontroller"];
+        IncomingMms incoming_mms = 10157 [(module) = "mms"];
+        OutgoingMms outgoing_mms = 10158 [(module) = "mms"];
+        SandboxSdkStorage sandbox_sdk_storage = 10159 [(module) = "adservices"];
     }
 
     // DO NOT USE field numbers above 100,000 in AOSP.
     // Field numbers 100,000 - 199,999 are reserved for non-AOSP (e.g. OEMs) to use.
     // Field numbers 200,000 and above are reserved for future use; do not use them at all.
-
     reserved 83, 10008, 10036, 10040, 10041;
 }
 
@@ -3188,6 +3206,16 @@ message BluetoothDeviceInfoReported {
     // session for the same remote device.
     // Default: 0 if the device's metric id is unknown.
     optional int32 metric_id = 8;
+    // A flag indicating if the MAC address of the remote device is public or
+    // random.
+    optional android.bluetooth.AddressTypeEnum address_type = 9;
+    // The first byte of MAC address
+    optional int32 byte1 = 10;
+    // The second byte of MAC address
+    optional int32 byte2 = 11;
+    // The third byte of MAC address
+    optional int32 byte3 = 12;
+
 }
 
 /**
@@ -3250,6 +3278,29 @@ message BluetoothSdpAttributeReported {
     // session for the same remote device.
     // Default: 0 if the device's metric id is unknown.
     optional int32 metric_id = 5;
+}
+
+/**
+* Logs the user created Bluetooth device's name.
+* It is pushed at Bluetooth pairing and connection.
+* The metric will only be collected from dogfooders.
+*
+* Logged from:
+*     packages/modules/Bluetooth
+*/
+message BluetoothDeviceNameReported {
+   // An identifier that can be used to match events for this device.
+   // The incremental identifier is locally generated and guaranteed not derived
+   // from any globally unique hardware id.
+   // For paired devices, it stays consistent between Bluetooth toggling for the
+   // same remote device.
+   // For unpaired devices, it stays consistent within the same Bluetooth adapter
+   // session for the same remote device.
+   // Default: 0 if the device's metric id is unknown.
+   optional int32 metric_id = 1;
+
+   // Name of the Bluetooth device. It is created by the user.
+   optional string device_name = 2;
 }
 
 /**
@@ -4667,7 +4718,7 @@ message ANROccurredProcessingStarted {
 /**
  * Logs when the vibrator state changes.
  * Logged from:
- *      frameworks/base/services/core/java/com/android/server/VibratorService.java
+ *      frameworks/base/services/core/java/com/android/vibrator/VibratorManagerService.java
  */
 message VibratorStateChanged {
     repeated AttributionNode attribution_node = 1;
@@ -4681,6 +4732,74 @@ message VibratorStateChanged {
     // Duration (in milliseconds) requested to keep the vibrator on.
     // Only applicable for State == ON.
     optional int64 duration_millis = 3;
+}
+
+/**
+ * Logs vibration request.
+ * Logged from:
+ *      frameworks/base/services/core/java/com/android/server/vibrator/VibratorManagerService.java
+ */
+// Next tag: 26
+message VibrationReported {
+  repeated AttributionNode attribution_node = 1;
+
+  enum VibrationType {
+    UNKNOWN = 0;
+    SINGLE = 1;
+    REPEATED = 2;
+    EXTERNAL = 3;
+  }
+
+  // Vibration identifiers for aggregation.
+  optional VibrationType vibration_type = 2;
+  // One of VibrationAttributes.USAGE_* constant values.
+  optional int32 vibration_usage = 3;
+  optional int32 vibration_status = 4;
+
+  // Vibration completion causes.
+  // Flag indicating if the vibration was canceled by the same process
+  // or superseded/canceled by another vibration from the same process.
+  optional bool ended_by_same_uid = 5;
+  // Usage value of the vibration that superseded/canceled this one.
+  optional int32 ended_by_usage = 6;
+  // Usage value of the vibration that was superseded/canceled by this one.
+  optional int32 interrupted_usage = 7;
+
+  // Vibration execution counters.
+  optional int32 repeat_count = 8;
+  // Total duration of this vibration at the service, including setup and cleanup.
+  optional int64 vibration_duration_millis = 9;
+  // Total duration the vibrator motor was active with non-zero amplitude.
+  optional int64 vibrator_on_duration_millis = 10;
+  // Delta between the incoming binder call to vibrate and the first step in the
+  // vibration conductor (closest measure of starting HAL interactions).
+  optional int64 start_latency_millis = 11;
+  // Delta between the HAL reporting the last vibrate operation has completed and
+  // vibrator service has finished the vibration and become idle.
+  optional int64 end_latency_millis = 12;
+
+  // Vibrator hardware HAL API interaction counters.
+  // The majority of vibrations will populate only a couple of the fields below.
+  optional int32 hal_compose_count = 13;
+  optional int32 hal_compose_pwle_count = 14;
+  optional int32 hal_on_count = 15;
+  optional int32 hal_off_count = 16;
+  optional int32 hal_perform_count = 17;
+  optional int32 hal_set_amplitude_count = 18;
+  optional int32 hal_set_external_control_count = 19;
+
+  // Vibrator hardware HAL API constants used (deduped).
+  // Values from CompositionPrimitive.aidl successfully triggered by this vibration at least once.
+  repeated int32 hal_supported_composition_primitives_used = 20;
+  // Values from Effect.aidl triggered by this vibration at least once.
+  repeated int32 hal_supported_effects_used = 21;
+  // Values from CompositionPrimitive.aidl triggered but not supported by the device.
+  repeated int32 hal_unsupported_composition_primitives_used = 22;
+  // Values from Effect.aidl triggered but not supported by the device.
+  repeated int32 hal_unsupported_effects_used = 23;
+  // Vibrator hardware HAL argument sizes (total).
+  optional int32 hal_composition_size = 24;
+  optional int32 hal_pwle_size = 25;
 }
 
 /*
@@ -6940,6 +7059,8 @@ message UIInteractionFrameInfoReported {
         SETTINGS_TOGGLE = 58;
         SHADE_DIALOG_OPEN = 59;
         USER_DIALOG_OPEN = 60;
+        TASKBAR_EXPAND = 61;
+        TASKBAR_COLLAPSE = 62;
     }
 
     optional InteractionType interaction_type = 1;
@@ -13652,7 +13773,7 @@ message IntegrityRulesPushed {
  *
  * Logged from Cell Broadcast module and platform:
  *   packages/modules/CellBroadcastService/src/com/android/cellbroadcastservice/
- *   packages/apps/CellBroadcastReceiver/
+ *   packages/apps/CellBroadcastReceiver/src/com/android/cellbroadcastreceiver/
  *   frameworks/opt/telephony/src/java/com/android/internal/telephony/CellBroadcastServiceManager.java
  */
 message CellBroadcastMessageReported {
@@ -13674,31 +13795,60 @@ message CellBroadcastMessageReported {
 
     // GSM, CDMA, CDMA-SCP
     optional CbType type = 1;
-
     // The source of the report
     optional ReportSource source = 2;
+    // The Message Identifier, as defined in 3GPP 23.041 clause 9.4.1.2.1
+    optional int32 serial_number = 3;
+    // The Message Identifier, as defined in 3GPP 23.041 clause 9.4.1.2.2
+    optional int32 message_id = 4;
 }
 
 /**
- * Logs when a cell broadcast message is filtered out, or otherwise intentionally not sent to CBR.
+ * Logs when a cell broadcast message is filtered out,
+ * or otherwise intentionally not sent to CBR, or not shown to users for reason
  *
- * Logged from CellBroadcastService module:
+ * Logged from Cell Broadcast module:
  *   packages/modules/CellBroadcastService/src/com/android/cellbroadcastservice/
+ *   packages/apps/CellBroadcastReceiver/src/com/android/cellbroadcastreceiver/
  */
 message CellBroadcastMessageFiltered {
     enum FilterReason {
+        // shown message to the user
         NOT_FILTERED = 0;
+        // filtered message due to duplication (message body, service category, cross sim)
         DUPLICATE_MESSAGE = 1;
+        // filtered message due to outside of coordinate range
         GEOFENCED_MESSAGE = 2;
+        // filtered message due to not using for emergency alert but for update cell information on Setting Menu
         AREA_INFO_MESSAGE = 3;
+        // filtered message due to OEM set config value ‘filtered message for duplication’ as ‘true’
         DISABLED_BY_OEM = 4;
+        // when in ECBM(Emergency CallBack Mode) status
+        NOTSHOW_ECBM = 5;
+        // when user turn off preference of channel
+        NOTSHOW_USER_PREF = 6;
+        // when Empty content or Unsupported charset
+        NOTSHOW_EMPTY_BODY = 7;
+        // when language code in message is not same with preference of second language
+        NOTSHOW_MISMATCH_PREF_SECOND_LANG = 8;
+        // when user turn off preference of second language
+        NOTSHOW_PREF_SECONDLANG_OFF = 9;
+        // when language code in message is not same with device language setting
+        NOTSHOW_MISMATCH_DEVICE_LANG_SETTING = 10;
+        // when channel has feature ‘testing_mode = true’ and device is not in cb test_mode
+        NOTSHOW_MESSAGE_FOR_TESTMODE = 11;
+        // when the message contains ‘filter’ string from properties
+        NOTSHOW_FILTER_STRING = 12;
     }
 
     // GSM, CDMA, CDMA-SCP
     optional CellBroadcastMessageReported.CbType type = 1;
-
     // The source of the report
     optional FilterReason filter = 2;
+    // The Message Identifier, as defined in 3GPP 23.041 clause 9.4.1.2.1
+    optional int32 serial_number = 3;
+    // The Message Identifier, as defined in 3GPP 23.041 clause 9.4.1.2.2
+    optional int32 message_id = 4;
 }
 
 /**
@@ -13730,9 +13880,122 @@ message CellBroadcastMessageError {
 
     // What kind of error occurred
     optional ErrorType type = 1;
-
     // Exception message (or log message) associated with the error (max 1000 chars)
     optional string exception_message = 2;
+}
+
+/**
+ * CellBroadcast channel range
+ * Refer from CellBroadcastConfigUpdated, CellBroadcastReceiverFeature
+ * Logged from Cell Broadcast module:
+ *   packages/apps/CellBroadcastReceiver/src/com/android/cellbroadcastreceiver/
+ */
+message CellBroadcastChannelRange {
+    optional int32 start = 1;
+    optional int32 end = 2;
+}
+/**
+ * CellBroadcast channel ranges
+ * Nested field for repeated
+ * Logged from Cell Broadcast module:
+ *   packages/apps/CellBroadcastReceiver/src/com/android/cellbroadcastreceiver/
+ */
+message CellBroadcastChannelRanges {
+    repeated CellBroadcastChannelRange channel_ranges = 1;
+}
+
+/**
+ * Logs when an channel configuration is updated with mcc-mnc
+ *
+ * Logged from Cell Broadcast module:
+ *   packages/apps/CellBroadcastReceiver/src/com/android/cellbroadcastreceiver/
+ */
+message CellBroadcastConfigUpdated  {
+    // mcc_mnc value of Network operator for the roaming case
+    optional string roaming_mcc_mnc = 1;
+    // The channel ranges to be updated logged as bytes
+    optional CellBroadcastChannelRanges channel_ranges = 2 [(log_mode) = MODE_BYTES];
+}
+
+/**
+ * Logs when a cell broadcast message is activated with the feature below
+ * or when channel configuration is changed with the feature below
+ *
+ * Logged from Cell Broadcast module:
+ *   packages/modules/CellBroadcastService/src/com/android/cellbroadcastservice
+ */
+message CellBroadcastServiceFeature {
+    // Not for mainline devices, but for android-go devices, OEM can register package names.
+    // if there is a data then true otherwise false
+    optional bool overlay_additional_cbr_packages = 1;
+    // package name which will get area info message
+    // if there is a data except “com.android.settings” then true, or false
+    optional bool overlay_area_info_packages = 2;
+    // Reset Area Info when device goes out of service
+    optional bool reset_area_info = 3;
+}
+
+/**
+ * Logs when a cell broadcast message is activated with the feature below
+ * or when channel configuration is changed with the feature below
+ *
+ * Logged from Cell Broadcast module:
+ *   packages/apps/CellBroadcastReceiver/src/com/android/cellbroadcastreceiver/
+ */
+message CellBroadcastReceiverFeature {
+    // Whether to enable alert handling during active voice call
+    optional bool alert_during_call = 1;
+    // Play alert sound in full volume regardless DND is on
+    // [none:0][all:Integer.MAX_VALUE][partial:4370 4380 50]
+    optional CellBroadcastChannelRanges override_dnd = 2 [(log_mode) = MODE_BYTES];
+    // Whether to Support roaming for attached network operator
+    optional bool roaming_support = 3;
+    // Whether to save alerts to sms inbox database
+    optional bool store_sms = 4;
+    // whether the device is in test mode through *#*#CMAS#*#*
+    optional bool testing_mode = 5;
+    // whether Text To Speech is on/off
+    optional bool tts_mode = 6;
+    // whether the device is able to enter test mode even on user build
+    optional bool testing_mode_on_user_build = 7;
+}
+
+/**
+ * Logs when exception is occurred in the device
+ *
+ * Logged from Cell Broadcast module:
+ *   packages/modules/CellBroadcastService/src/com/android/cellbroadcastservice/
+ *   packages/apps/CellBroadcastReceiver/
+ */
+message CellBroadcastModuleError {
+    enum ErrorType {
+        ERROR_UNKNOWN = 0;
+        ERROR_BAD_CONFIG = 1;
+        ERROR_DB_MIGRATION = 2;
+        ERROR_DEFAULT_RES = 3;
+        ERROR_ENABLE_CHANNEL = 4;
+        ERROR_GET_LOCATION = 5;
+        ERROR_MISSING_RES = 6;
+        ERROR_PLAY_FLASH = 7;
+        ERROR_PLAY_SOUND = 8;
+        ERROR_PLAY_TTS = 9;
+        ERROR_PREF_MIGRATION = 10;
+        ERROR_PROVIDER_INIT = 11;
+        ERROR_RESET_CHANNEL_R = 12;
+        ERROR_STATUS_BAR = 13;
+        ERROR_REMINDER_INTERVAL = 14;
+        ERROR_ICON_RESOURCE = 15;
+        ERROR_CHANNEL_RANGE_PARSE = 16;
+        ERROR_DB_INIT = 17;
+        ERROR_NOT_FOUND_DEFAULT_CBR_PKGS = 18;
+        ERROR_FOUND_MULTIPLE_CBR_PKGS = 19;
+    }
+
+    // The source of the report
+    optional CellBroadcastMessageReported.ReportSource source = 1;
+
+    // The error type
+    optional ErrorType type = 2;
 }
 
 /**
@@ -13774,6 +14037,25 @@ message TifTuneStateChanged {
     // The HDMI port id
     // Only valid when type == HDMI
     optional int32 hdmi_port = 6  [(state_field_option).primary_field = true];
+}
+
+/*
+ * Logs when JSScriptEngine is used to execute JavaScript code on device.
+ *
+ * Logged from Cell Broadcast module:
+ *   packages/modules/AdServices/adservices/service-core/java/com/android/adservices/service/js/
+ */
+message JSScriptEngineLatencyReported {
+    enum LatencyStat {
+      UNKNOWN = 0;
+      SANDBOX_INIT = 1;
+      ISOLATE_CREATE = 2;
+      JAVA_PROCESS_EXECUTION = 3;
+      WEBVIEW_PROCESS_EXECUTION = 4;
+    }
+
+    optional LatencyStat stat = 1;
+    optional int64 latency_millis = 2;
 }
 
 /**
@@ -13953,8 +14235,8 @@ message VoiceCallSession {
     // Direction of the call (incoming or outgoing).
     optional android.telephony.CallDirectionEnum direction = 3;
 
-    // Time spent setting up the call.
-    optional android.telephony.CallSetupDurationEnum setup_duration = 4;
+    // Deprecated by setup_duration_millis
+    optional android.telephony.CallSetupDurationEnum setup_duration = 4 [ deprecated = true ];
 
     // Whether the call ended before the setup was completed.
     optional bool setup_failed = 5;
@@ -17436,6 +17718,28 @@ enum ArtDatumId {
     ART_DATUM_GC_YOUNG_GENERATION_TRACING_THROUGHPUT_AVG_MB_PER_SEC = 26;
     ART_DATUM_GC_FULL_HEAP_TRACING_THROUGHPUT_AVG_MB_PER_SEC = 27;
     ART_DATUM_GC_TOTAL_COLLECTION_TIME_MS = 28;
+
+    // New metrics to support averages reported as sum (numerator) and count (denominator),
+    // in order to make it easier to be reported as Value Metrics.
+
+    // numerator from ART_DATUM_GC_WORLD_STOP_TIME_AVG_MICROS
+    ART_DATUM_GC_WORLD_STOP_TIME_US = 29;
+    // denominator from ART_DATUM_GC_WORLD_STOP_TIME_AVG_MICROS
+    ART_DATUM_GC_WORLD_STOP_COUNT = 30;
+    // numerator from ART_DATUM_GC_YOUNG_GENERATION_TRACING_THROUGHPUT_AVG_MB_PER_SEC
+    ART_DATUM_GC_YOUNG_GENERATION_COLLECTION_SCANNED_BYTES = 31;
+    // numerator from ART_DATUM_GC_YOUNG_GENERATION_COLLECTION_THROUGHPUT_AVG_MB_PER_SEC
+    ART_DATUM_GC_YOUNG_GENERATION_COLLECTION_FREED_BYTES = 32;
+    // denominator from ART_DATUM_GC_YOUNG_GENERATION_TRACING_THROUGHPUT_AVG_MB_PER_SEC
+    // and ART_DATUM_GC_YOUNG_GENERATION_COLLECTION_THROUGHPUT_AVG_MB_PER_SEC
+    ART_DATUM_GC_YOUNG_GENERATION_COLLECTION_DURATION_MS = 33;
+    // numerator from ART_DATUM_GC_FULL_HEAP_TRACING_THROUGHPUT_AVG_MB_PER_SEC
+    ART_DATUM_GC_FULL_HEAP_COLLECTION_SCANNED_BYTES = 34;
+    // numerator from ART_DATUM_GC_FULL_HEAP_COLLECTION_THROUGHPUT_AVG_MB_PER_SEC
+    ART_DATUM_GC_FULL_HEAP_COLLECTION_FREED_BYTES = 35;
+    // denominator from ART_DATUM_GC_FULL_HEAP_TRACING_THROUGHPUT_AVG_MB_PER_SEC
+    // and ART_DATUM_GC_FULL_HEAP_COLLECTION_THROUGHPUT_AVG_MB_PER_SEC
+    ART_DATUM_GC_FULL_HEAP_COLLECTION_DURATION_MS = 36;
 }
 
 // Indicates what class of thread the reported values apply to.
@@ -19706,6 +20010,28 @@ message UwbSessionClosed {
 }
 
 /*
+ * Logs details of start UWB ranging
+ * Logged from packages/modules/Uwb/service/java/com/android/server/uwb/UwbMetrics.java
+ */
+message UwbStartRanging {
+    // UWB profiles
+    optional android.uwb.Profile profile = 1;
+    // Scrambled timestamp sequence (STS) Type
+    optional android.uwb.Sts sts = 2;
+    // Was it an initiator as opposed to responder?
+    optional bool is_initiator = 3;
+    // Was it a controller as opposed to controlee?
+    optional bool is_controller = 4;
+    // Was the connection done by the app as opposed to by the framework?
+    optional bool is_framework_initiated = 5;
+    // Was it out-of-band connection as opposed to in-band connection?
+    // Note that this field is ignored if is_framework_initiated is false.
+    optional bool is_out_of_band = 6;
+    // The status code of ranging start.
+    optional android.uwb.RangingStatus status = 7;
+}
+
+/*
  * Log that the ranging measurement is received
  * Logged from packages/modules/Uwb/service/java/com/android/server/uwb/UwbMetrics.java
  */
@@ -21325,4 +21651,180 @@ message SettingsProviderSettingChanged {
     optional string name = 2; // name of the setting
     optional int32 type = 3; // the setting type, e.g., global, system or secure
     optional int32 change_type = 4; // the change type, e.g., insert, delete or update
+}
+
+/**
+ * Pulls information for a single incoming MMS.
+ *
+ * Each pull creates multiple atoms, one for each MMS.
+ * The sequence is randomized when pulled.
+ *
+ * Pulled from:
+ *   packages/services/Mms/src/com/android/mms/service/metrics/MmsMetricsCollector.java
+ */
+message IncomingMms {
+    // Radio access technology (RAT) used for downloading the MMS.
+    // It can be IWLAN in case of IMS.
+    // RAT is logged at the beginning of the download.
+    optional android.telephony.NetworkTypeEnum rat = 1;
+
+    // Indicate a specific result handling the MMS.
+    optional android.mms.MmsResultEnum result = 2;
+
+    // Roaming type when MMS was received.
+    optional android.telephony.RoamingTypeEnum roaming = 3;
+
+    // Index of the SIM used, 0 for single-SIM devices.
+    optional int32 sim_slot_index = 4;
+
+    // Whether the device was in multi-SIM mode (with multiple active SIM profiles).
+    optional bool is_multi_sim = 5;
+
+    // Whether the MMS was received with an eSIM profile.
+    optional bool is_esim = 6;
+
+    // Carrier ID of the SIM card used for the MMS.
+    // See https://source.android.com/devices/tech/config/carrierid.
+    optional int32 carrier_id = 7;
+
+    // Average time in milliseconds to download MMS from the network.
+    optional int64 avg_interval_millis = 8;
+
+    // Total number of MMS having same configuration.
+    optional int64 mms_count = 9;
+}
+
+/**
+ * Pulls information for a single outgoing MMS.
+ *
+ * Each pull creates multiple atoms, one for each MMS.
+ * The sequence is randomized when pulled.
+ *
+ * Pulled from:
+ *   packages/services/Mms/src/com/android/mms/service/metrics/MmsMetricsCollector.java
+ */
+message OutgoingMms {
+    // Radio access technology (RAT) used for uploading the MMS.
+    // It can be IWLAN in case of IMS.
+    // RAT is logged at the beginning of the upload.
+    optional android.telephony.NetworkTypeEnum rat = 1;
+
+    // Indicate a specific result handling the MMS.
+    optional android.mms.MmsResultEnum result = 2;
+
+    // Roaming type when MMS was received.
+    optional android.telephony.RoamingTypeEnum roaming = 3;
+
+    // Index of the SIM used, 0 for single-SIM devices.
+    optional int32 sim_slot_index = 4;
+
+    // Whether the device was in multi-SIM mode (with multiple active SIM profiles).
+    optional bool is_multi_sim = 5;
+
+    // Whether the MMS was sent with an eSIM profile.
+    optional bool is_esim = 6;
+
+    // Carrier ID of the SIM card used for the MMS.
+    // See https://source.android.com/devices/tech/config/carrierid.
+    optional int32 carrier_id = 7;
+
+    // Average time in milliseconds to download MMS from the network.
+    optional int64 avg_interval_millis = 8;
+
+    // Total number of MMS having same configuration.
+    optional int64 mms_count = 9;
+
+    // Whether the default MMS application sent the MMS (regardless of which application).
+    optional bool is_from_default_app = 10;
+
+    // Retry count: 0 for the first attempt and then increasing for each attempt.
+    optional int32 retry_id = 11;
+}
+
+message PrivacySignalNotificationInteraction {
+
+    enum Action {
+        UNKNOWN = 0;
+        NOTIFICATION_SHOWN = 1;
+        NOTIFICATION_CLICKED = 2;
+        DISMISSED = 3;
+    }
+
+    // Privacy source that triggered the notification
+    optional android.stats.privacysignals.PrivacySource privacy_source = 1;
+
+    // Optional Uid of the package for which the notification was sent.
+    optional int32 uid = 2 [(is_uid) = true];
+
+    // Action taken on the notification.
+    optional Action action = 3;
+
+    // Session Id to link the notification with the issue card.
+    optional int64 session_id = 4; // to map the notification and issue card interaction
+}
+
+message PrivacySignalIssueCardInteraction {
+
+    enum Action {
+        ACTION_UNKNOWN = 0;
+        CARD_SHOWN = 1;
+        CARD_CLICKED = 2;
+        CARD_DISMISSED = 3;
+        CLICKED_CTA1 = 4;
+        CLICKED_CTA2 = 5;
+    }
+
+    // Privacy source  that pushed the issue card.
+    optional android.stats.privacysignals.PrivacySource privacy_source = 1;
+
+    // Optional Uid of the package for which the issue card was sent.
+    optional int32 uid = 2 [(is_uid) = true];
+
+    // Action taken on the issue card.
+    optional Action action = 3;
+
+    // Session Id to link the notification with the issue card.
+    optional int64 session_id = 4;
+}
+
+message PrivacySignalsJobFailure {
+
+    // Which privacy source for which the daily job failed.
+    optional android.stats.privacysignals.PrivacySource privacy_source = 1;
+
+    enum JobFailureReason {
+        REASON_UNKNOWN = 0;
+        TIMEOUT = 1;
+        COROUTINE_CANCELLED = 2;
+    }
+    optional JobFailureReason reason =2;
+}
+
+// Logs when an API call from app to sandbox process is made
+message SandboxApiCalled {
+    enum Method {
+        METHOD_UNSPECIFIED = 0;
+        LOAD_SDK = 1;
+        LOAD_SANDBOX_AND_SDK = 2;
+        REQUEST_SURFACE_PACKAGE = 3;
+    }
+
+    // The method which was called.
+    optional Method method = 1;
+
+    //Time taken from the initiation of the API till the callback was received
+    optional int32 latency_millis = 2;
+
+    // The success status of the callback
+    optional bool success = 3;
+}
+
+//Logs periodically the storage of SDKs used by the app
+message SandboxSdkStorage {
+
+    // Boolean value to specify if the storage belongs to SDK or is shared
+    optional bool shared = 1;
+
+    // Storage
+    optional int32 storage_kb = 2;
 }
