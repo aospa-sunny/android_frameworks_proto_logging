@@ -69,6 +69,7 @@ import "frameworks/proto_logging/stats/enums/stats/launcher/launcher.proto";
 import "frameworks/proto_logging/stats/enums/stats/location/location_enums.proto";
 import "frameworks/proto_logging/stats/enums/stats/mediametrics/mediametrics.proto";
 import "frameworks/proto_logging/stats/enums/stats/mediaprovider/mediaprovider_enums.proto";
+import "frameworks/proto_logging/stats/enums/stats/mobiledatadownload/enums.proto";
 import "frameworks/proto_logging/stats/enums/stats/privacysignals/enums.proto";
 import "frameworks/proto_logging/stats/enums/stats/safetycenter/enums.proto";
 import "frameworks/proto_logging/stats/enums/stats/storage/storage_enums.proto";
@@ -730,8 +731,9 @@ message Atom {
         PrivacySignalIssueCardInteraction privacy_signal_issue_card_interaction = 485 [(module) = "permissioncontroller"];
         PrivacySignalsJobFailure privacy_signals_job_failure = 486 [(module) = "permissioncontroller"];
         VibrationReported vibration_reported = 487 [(module) = "framework"];
-        SandboxApiCalled sandbox_api_called = 488 [(module) = "adservices"];
+        SandboxApiCalled sandbox_api_called = 488 [(module) = "sdksandbox"];
         UwbStartRanging uwb_ranging_start = 489 [(module) = "uwb"];
+        MobileDataDownloadFileGroupDownloadStatusReported mobile_data_download_file_group_status_reported = 490 [(module) = "adservices"];
         // StatsdStats tracks platform atoms with ids upto 750.
         // Update StatsdStats::kMaxPushedAtomId when atom ids here approach that value.
     }
@@ -928,7 +930,7 @@ message Atom {
         SafetyState safety_state = 10156 [(module) = "permissioncontroller"];
         IncomingMms incoming_mms = 10157 [(module) = "mms"];
         OutgoingMms outgoing_mms = 10158 [(module) = "mms"];
-        SandboxSdkStorage sandbox_sdk_storage = 10159 [(module) = "adservices"];
+        SandboxSdkStorage sandbox_sdk_storage = 10159 [(module) = "sdksandbox"];
     }
 
     // DO NOT USE field numbers above 100,000 in AOSP.
@@ -3283,7 +3285,6 @@ message BluetoothSdpAttributeReported {
 /**
 * Logs the user created Bluetooth device's name.
 * It is pushed at Bluetooth pairing and connection.
-* The metric will only be collected from dogfooders.
 *
 * Logged from:
 *     packages/modules/Bluetooth
@@ -6994,7 +6995,7 @@ message BlobOpened{
  * Logged from:
  *  frameworks/base/core/java/com/android/internal/jank/FrameTracker.java
  *
- * Next Tag: 61
+ * Next Tag: 64
  */
 message UIInteractionFrameInfoReported {
     enum InteractionType {
@@ -7061,6 +7062,7 @@ message UIInteractionFrameInfoReported {
         USER_DIALOG_OPEN = 60;
         TASKBAR_EXPAND = 61;
         TASKBAR_COLLAPSE = 62;
+        SHADE_CLEAR_ALL = 63;
     }
 
     optional InteractionType interaction_type = 1;
@@ -9809,7 +9811,10 @@ message NfcStateChanged {
         ON_LOCKED = 3; // Secure Nfc enabled.
         CRASH_RESTART = 4; // NfcService watchdog timeout restart.
     }
-    optional State state = 1;
+    optional State state = 1 [
+        (state_field_option).exclusive_state = true,
+        (state_field_option).nested = false
+    ];
 }
 
 /**
@@ -14809,6 +14814,10 @@ message DataCallSession {
 
     // Reason why the data call handover failed, as in RIL_DataCallFailCause from ril.h
     repeated int32 handover_failure_causes = 20;
+
+    // For each int32, the lower 16 bits represent the source RAT while the upper 16 bits indicate
+    // the target RAT of the failed handover.
+    repeated int32 handover_failure_rat = 21;
 }
 
 /**
@@ -21272,8 +21281,11 @@ message OnsOpportunisticEsimProvisioningComplete {
       // Unresolvable errors such as Invalid SMDP address or activation code.
       RESULT_UNRESOLVABLE_ERROR = 8;
 
-      //Auto provisioning disabled
+      // Auto provisioning disabled
       RESULT_AUTO_PROVISIONING_DISABLED = 9;
+
+      // eSIM activation failed
+      RESULT_ESIM_ACTIVATION_FAILED = 10;
     }
 
     // CBRS carrier id. Filled only while reporting failure cases.
@@ -21665,7 +21677,7 @@ message SettingsProviderSettingChanged {
 message IncomingMms {
     // Radio access technology (RAT) used for downloading the MMS.
     // It can be IWLAN in case of IMS.
-    // RAT is logged at the beginning of the download.
+    // RAT is logged at the end of the download.
     optional android.telephony.NetworkTypeEnum rat = 1;
 
     // Indicate a specific result handling the MMS.
@@ -21692,6 +21704,12 @@ message IncomingMms {
 
     // Total number of MMS having same configuration.
     optional int64 mms_count = 9;
+
+    // Retry count: 0 for the first attempt and then increasing for each attempt.
+    optional int32 retry_id = 10;
+
+    // Whether MmsService or carrier app downloaded the MMS from the network.
+    optional bool handled_by_carrier_app = 11;
 }
 
 /**
@@ -21706,7 +21724,7 @@ message IncomingMms {
 message OutgoingMms {
     // Radio access technology (RAT) used for uploading the MMS.
     // It can be IWLAN in case of IMS.
-    // RAT is logged at the beginning of the upload.
+    // RAT is logged at the end of the upload.
     optional android.telephony.NetworkTypeEnum rat = 1;
 
     // Indicate a specific result handling the MMS.
@@ -21739,6 +21757,9 @@ message OutgoingMms {
 
     // Retry count: 0 for the first attempt and then increasing for each attempt.
     optional int32 retry_id = 11;
+
+    // Whether MmsService or carrier app uploaded the MMS to the network.
+    optional bool handled_by_carrier_app = 12;
 }
 
 message PrivacySignalNotificationInteraction {
@@ -21827,4 +21848,42 @@ message SandboxSdkStorage {
 
     // Storage
     optional int32 storage_kb = 2;
+}
+
+/**
+ * Logs stats on the download status of file groups. Provides information on
+ * download latency and download penetration.
+ */
+message MobileDataDownloadFileGroupDownloadStatusReported {
+  // The status of the file group on device: PENDING, DOWNLOADED, FAILED
+  optional android.stats.mobiledatadownload.DownloadStatus
+      file_group_download_status = 1;
+  // Timestamp of when this file group was added to the device.
+  optional int64 group_added_timestamp = 2;
+  // Timestamp of when MDD completed downloading the file group.
+  optional int64 group_downloaded_timestamp = 3;
+  // Stats specific to the file group
+  optional MobileDataDownloadFileGroupStats file_group_stats = 4 [(android.os.statsd.log_mode) = MODE_BYTES];
+  // Number of days since the last time the device attempted to log file group download status for any file group.
+  optional int32 days_since_last_log = 5;
+}
+
+/** Shared data among MobileDataDownload statistics. Not meant to be a top level atom proto.*/
+message MobileDataDownloadFileGroupStats {
+  // The name of the file group. This a string set server side used to retrieve
+  // the files. Does not contain PII.
+  optional string file_group_name = 1;
+  // Allows the clients to identify a file group based on a given set of
+  // properties. This string is set server side and does not contain PII.
+  optional string variant_id = 2;
+  // Identifier for the data file group created to identify the version of the
+  // file group.
+  optional int64 build_id = 3;
+  // The number of files in the file group.
+  optional int32 file_count = 4;
+  // Whether the file group has an account associated with it.
+  optional bool has_account = 5;
+  // Inverse of the sampling rate used to sample this event.
+  optional int32 sampling_interval = 6;
+  // Note: we do not have owner_package since that's already transmitted.
 }
