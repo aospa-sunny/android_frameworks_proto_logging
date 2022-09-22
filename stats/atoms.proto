@@ -23,6 +23,7 @@ option java_package = "com.android.os";
 option java_outer_classname = "AtomsProto";
 
 import "frameworks/proto_logging/stats/atom_field_options.proto";
+import "frameworks/proto_logging/stats/enums/adservices/fledge/enums.proto";
 import "frameworks/proto_logging/stats/enums/app/enums.proto";
 import "frameworks/proto_logging/stats/enums/app/job/enums.proto";
 import "frameworks/proto_logging/stats/enums/app/remoteprovisioner_enums.proto";
@@ -249,7 +250,7 @@ message Atom {
         WifiEnabledStateChanged wifi_enabled_state_changed = 113 [(module) = "framework"];
         WifiRunningStateChanged wifi_running_state_changed = 114
                 [(module) = "framework", deprecated = true];
-        AppCompacted app_compacted = 115 [(module) = "framework"];
+        AppCompacted app_compacted = 115 [(module) = "framework", deprecated = true];
         NetworkDnsEventReported network_dns_event_reported = 116 [(module) = "resolv"];
         DocsUIPickerLaunchedFromReported docs_ui_picker_launched_from_reported =
             117 [(module) = "docsui"];
@@ -723,9 +724,9 @@ message Atom {
                 477 [(module) = "framework"];
         BluetoothDeviceNameReported bluetooth_device_name_reported = 478 [(module) = "bluetooth"];
         CellBroadcastConfigUpdated cb_config_updated = 479 [(module) = "cellbroadcast"];
-        CellBroadcastModuleError cb_module_error = 480 [(module) = "cellbroadcast"];
-        CellBroadcastServiceFeature cb_service_feature= 481 [(module) = "cellbroadcast"];
-        CellBroadcastReceiverFeature cb_receiver_feature= 482 [(module) = "cellbroadcast"];
+        CellBroadcastModuleErrorReported cb_module_error_reported = 480 [(module) = "cellbroadcast"];
+        CellBroadcastServiceFeatureChanged cb_service_feature_changed = 481 [(module) = "cellbroadcast"];
+        CellBroadcastReceiverFeatureChanged cb_receiver_feature_changed = 482 [(module) = "cellbroadcast"];
         JSScriptEngineLatencyReported jsscriptengine_latency_reported = 483 [(module) = "adservices"];
         PrivacySignalNotificationInteraction privacy_signal_notification_interaction = 484 [(module) = "permissioncontroller"];
         PrivacySignalIssueCardInteraction privacy_signal_issue_card_interaction = 485 [(module) = "permissioncontroller"];
@@ -734,12 +735,37 @@ message Atom {
         SandboxApiCalled sandbox_api_called = 488 [(module) = "sdksandbox"];
         UwbStartRanging uwb_ranging_start = 489 [(module) = "uwb"];
         MobileDataDownloadFileGroupDownloadStatusReported mobile_data_download_file_group_status_reported = 490 [(module) = "adservices"];
+        AppCompactedV2 app_compacted_v2 = 491 [(module) = "framework"];
+        // reserved 492
+        AdServicesSettingsUsageReported ad_services_settings_usage_reported = 493 [(module) = "adservices", (truncate_timestamp) = true];
+        DisplayBrightnessChanged display_brightness_changed = 494 [(module) = "framework"];
+        ActivityActionBlocked activity_action_blocked = 495 [(module) = "framework"];
+        BackgroundFetchProcessReported background_fetch_process_reported =
+                496 [(module) = "adservices"];
+        UpdateCustomAudienceProcessReported update_custom_audience_process_reported =
+                497 [(module) = "adservices"];
+        RunAdBiddingProcessReported run_ad_bidding_process_reported = 498 [(module) = "adservices"];
+        RunAdScoringProcessReported run_ad_scoring_process_reported = 499 [(module) = "adservices"];
+        RunAdSelectionProcessReported run_ad_selection_process_reported =
+                500 [(module) = "adservices"];
+        RunAdBiddingPerCAProcessReported run_ad_bidding_per_ca_process_reported =
+                501 [(module) = "adservices"];
+        MobileDataDownloadDownloadResultReported mobile_data_download_download_result_reported = 502 [(module) = "adservices"];
+        MobileDataDownloadFileGroupStorageStatsReported mobile_data_download_file_group_storage_stats_reported = 503 [(module) = "adservices"];
+        NetworkDnsServerSupportReported network_dns_server_support_reported = 504 [(module) = "resolv"];
+        VmBooted vm_booted = 505 [(module) = "virtualizationservice"];
+        VmExited vm_exited = 506 [(module) = "virtualizationservice"];
+        AmbientBrightnessStatsReported ambient_brightness_stats_reported = 507 [(module) = "framework"];
+        MediametricsSpatializerCapabilitiesReported mediametrics_spatializercapabilities_reported = 508;
+        MediametricsSpatializerDeviceEnabledReported mediametrics_spatializerdeviceenabled_reported = 509;
+        MediametricsHeadTrackerDeviceEnabledReported mediametrics_headtrackerdeviceenabled_reported = 510;
+        MediametricsHeadTrackerDeviceSupportedReported mediametrics_headtrackerdevicesupported_reported = 511;
         // StatsdStats tracks platform atoms with ids upto 750.
         // Update StatsdStats::kMaxPushedAtomId when atom ids here approach that value.
     }
 
     // Pulled events will start at field 10000.
-    // Next: 10160
+    // Next: 10161
     oneof pulled {
         WifiBytesTransfer wifi_bytes_transfer = 10000 [(module) = "framework"];
         WifiBytesTransferByFgBg wifi_bytes_transfer_by_fg_bg = 10001 [(module) = "framework"];
@@ -931,12 +957,13 @@ message Atom {
         IncomingMms incoming_mms = 10157 [(module) = "mms"];
         OutgoingMms outgoing_mms = 10158 [(module) = "mms"];
         SandboxSdkStorage sandbox_sdk_storage = 10159 [(module) = "sdksandbox"];
+        MultiUserInfo multi_user_info = 10160 [(module) = "framework"];
     }
 
     // DO NOT USE field numbers above 100,000 in AOSP.
     // Field numbers 100,000 - 199,999 are reserved for non-AOSP (e.g. OEMs) to use.
     // Field numbers 200,000 and above are reserved for future use; do not use them at all.
-    reserved 83, 10008, 10036, 10040, 10041;
+    reserved 83, 360 to 363, 492, 10008, 10036, 10040, 10041, 21004, 21005;
 }
 
 /**
@@ -1071,6 +1098,25 @@ message ScreenStateChanged {
 }
 
 /**
+ * Part of the go/activity-security project. Logs information about activity
+ * starts which would be blocked as part of the project.
+ *
+ * Logged from:
+ *  - frameworks/base/services/core/java/com/android/server/wm/ActivityStarter.java
+ */
+message ActivityActionBlocked {
+    optional int32 caller_uid = 1 [(is_uid) = true];
+    optional string caller_activity_class_name = 2;
+    optional int32 target_task_top_activity_uid = 3 [(is_uid) = true];
+    optional string target_task_top_activity_class_name = 4;
+    optional bool target_task_is_different = 5;
+    optional int32 target_activity_uid = 6 [(is_uid) = true];
+    optional string target_activity_class_name = 7;
+    optional string target_intent_action = 8;
+    optional int32 target_intent_flags = 9;
+}
+
+/**
  * Logs that the process state of the uid, as determined by ActivityManager
  * (i.e. the highest process state of that uid's processes) has changed.
  *
@@ -1199,6 +1245,12 @@ message WifiHealthStatReported {
     optional bool is_cell_data_available = 3;
     // the Band bucket the connected network is on
     optional Band band = 4;
+    // the Signal strength in the range of [-126, 0)
+    optional int32 rssi = 5;
+    // estimated tx throughput in kbps
+    optional int32 tx_kbps = 6 [default = -1];
+    // estimated rx throughput in kbps
+    optional int32 rx_kbps = 7 [default = -1];
 }
 
 /**
@@ -4930,6 +4982,41 @@ message AppStartOccurred {
 
     // The timestamp(SystemClock#elapsedRealtime()) when starting activity.
     optional int64 activity_start_timestamp_millis = 22;
+
+    /**
+     * The process state of apps, keep in sync with
+     * frameworks/base/core/java/android/app/ActivityManager.java
+     */
+    enum AppProcessState {
+        PROCESS_STATE_UNKNOWN = -1;
+        PROCESS_STATE_PERSISTENT = 0;
+        PROCESS_STATE_PERSISTENT_UI = 1;
+        PROCESS_STATE_TOP = 2;
+        PROCESS_STATE_BOUND_TOP = 3;
+        PROCESS_STATE_FOREGROUND_SERVICE = 4;
+        PROCESS_STATE_BOUND_FOREGROUND_SERVICE = 5;
+        PROCESS_STATE_IMPORTANT_FOREGROUND = 6;
+        PROCESS_STATE_IMPORTANT_BACKGROUND = 7;
+        PROCESS_STATE_TRANSIENT_BACKGROUND = 8;
+        PROCESS_STATE_BACKUP = 9;
+        PROCESS_STATE_SERVICE = 10;
+        PROCESS_STATE_RECEIVER = 11;
+        PROCESS_STATE_TOP_SLEEPING = 12;
+        PROCESS_STATE_HEAVY_WEIGHT = 13;
+        PROCESS_STATE_HOME = 14;
+        PROCESS_STATE_LAST_ACTIVITY = 15;
+        PROCESS_STATE_CACHED_ACTIVITY = 16;
+        PROCESS_STATE_CACHED_ACTIVITY_CLIENT = 17;
+        PROCESS_STATE_CACHED_RECENT = 18;
+        PROCESS_STATE_CACHED_EMPTY = 19;
+        PROCESS_STATE_NONEXISTENT = 20;
+    }
+
+    // The process state of the launching activity prior to the launch.
+    optional AppProcessState process_state = 23;
+
+    // The oom adj score of the launching activity prior to the launch.
+    optional int32 process_oom_adj = 24;
 }
 
 message AppStartCanceled {
@@ -5429,6 +5516,12 @@ message LmkKillOccurred {
 
     // Max thrashing levels (workingset_refaults/filecache in %).
     optional int32 max_thrashing = 15;
+
+    // How many active foreground services across the system
+    optional int32 total_foreground_services = 16;
+
+    // How many processes hosting foreground services
+    optional int32 procs_with_foreground_services = 17;
 }
 
 /*
@@ -6229,6 +6322,15 @@ message BroadcastDeliveryEventReported {
 
     /** The start type of the host process. */
     optional ProcessStartType proc_start_type = 5;
+
+    /** The delay in ms from enqueue to dispatch of this intent to the set of receivers. */
+    optional int64 dispatch_delay = 6;
+
+    /** The delay in ms from beginning of dispatch to this specific receiver. */
+    optional int64 receive_delay = 7;
+
+    /** The delay in ms from dispatch to finish the handling of this intent. */
+    optional int64 finish_delay = 8;
 }
 
 /**
@@ -7001,7 +7103,6 @@ message UIInteractionFrameInfoReported {
     enum InteractionType {
         UNKNOWN = 0;
         NOTIFICATION_SHADE_SWIPE = 1;
-        SHADE_EXPAND_COLLAPSE_LOCK = 2;
         SHADE_SCROLL_FLING = 3;
         SHADE_ROW_EXPAND = 4;
         SHADE_ROW_SWIPE = 5;
@@ -7063,6 +7164,7 @@ message UIInteractionFrameInfoReported {
         TASKBAR_EXPAND = 61;
         TASKBAR_COLLAPSE = 62;
         SHADE_CLEAR_ALL = 63;
+        reserved 2;
     }
 
     optional InteractionType interaction_type = 1;
@@ -7112,6 +7214,8 @@ message UIActionLatencyReported {
         ACTION_UDFPS_ILLUMINATE = 15;
         ACTION_SHOW_BACK_ARROW = 16;
         ACTION_LOAD_SHARE_SHEET = 17;
+        ACTION_SHOW_SELECTION_TOOLBAR = 18;
+        ACTION_FOLD_TO_AOD = 19;
     }
 
     optional ActionType action = 1;
@@ -7441,7 +7545,7 @@ message OnDevicePowerMeasurement {
 
 /**
  * Pulls Cpu time per cluster per frequency.
- * This is tracked by the time_in_state eBPF program.
+ * This is tracked by the timeInState eBPF program.
  */
 message CpuTimePerClusterFreq {
     optional uint32 cluster = 1;
@@ -7493,7 +7597,7 @@ message CpuTimePerUidFreq {
 
 /**
   * Pulls Cpu Cycles Per ThreadGroup Per Cluster.
-  * This is tracked by the time_in_state eBPF program.
+  * This is tracked by the timeInState eBPF program.
   */
 message CpuCyclesPerThreadGroupCluster {
     enum ThreadGroup {
@@ -8966,6 +9070,23 @@ message BatteryUsageStatsAtomsProto {
 
     // Total amount of time battery was discharging during the reported session
     optional int64 discharge_duration_millis = 7;
+
+    // Notes the power model used for a power component.
+    message PowerComponentModel {
+        // Holds android.os.PowerComponentEnum, or custom component value between 1000 and 9999.
+        optional int32 component = 1;
+
+        enum PowerModel {
+            UNDEFINED = 0;
+            POWER_PROFILE = 1;
+            MEASURED_ENERGY = 2;
+        }
+
+        optional PowerModel power_model = 2;
+    }
+
+    // The power model used for each power component.
+    repeated PowerComponentModel component_models = 8;
 }
 
 /**
@@ -9255,6 +9376,32 @@ message AppCompacted {
   optional int64 after_zram_free_kilobytes = 18;
 }
 
+message AppCompactedV2 {
+  // UID of the process being compacted
+  optional int32 uid = 1 [(is_uid) = true];
+
+  // Process state for compacted process
+  optional int32 proc_state = 2;
+
+  // Current OOM Adjust at the time of compaction, this would correspond to any newly set oom adj.
+  optional int32 current_oom_adj = 3;
+
+  // Delta Anon RSS reduced with compaction computed as RSS Before - RSS After.
+  optional int64 delta_anon_rss = 4;
+
+  // Physical ZRAM Consumed during compaction
+  optional int64 zram_consumed = 5;
+
+  // CPU time spent compacting
+  optional float compact_cpu_time = 6;
+
+  // Anon RSS of the process prior to being compacted
+  optional int64 original_anon_rss = 7;
+
+  // Reason for the OOM adj change
+  optional android.app.OomChangeReasonEnum oom_change_reason = 8;
+}
+
 /**
  * Logs when a Tethering event occurs.
  *
@@ -9308,6 +9455,20 @@ message NetworkDnsEventReported {
 
     // The sample rate of DNS stats (to statsd) is 1/sampling_rate_denom.
     optional int32 sampling_rate_denom = 9;
+}
+
+/**
+ * logs the number of DNS servers supported by the protocol
+ */
+message NetworkDnsServerSupportReported {
+    // The network type of the network
+    optional android.stats.dnsresolver.NetworkType network_type = 1;
+
+    // The private DNS mode of the network
+    optional android.stats.dnsresolver.PrivateDnsModes private_dns_modes = 2;
+
+    // Stores the state of all DNS servers for this network
+    optional android.stats.dnsresolver.Servers servers = 3 [(log_mode) = MODE_BYTES];
 }
 
 /**
@@ -10352,6 +10513,15 @@ message ProcessStartTime {
     }
 
     optional HostingTypeId hosting_type_id = 11;
+
+    enum TriggerType {
+        TRIGGER_TYPE_UNKNOWN = 0;
+        TRIGGER_TYPE_ALARM = 1;
+        TRIGGER_PUSH_MESSAGE = 2;
+        TRIGGER_PUSH_MESSAGE_OVER_QUOTA = 3;
+    }
+
+    optional TriggerType trigger_type = 12;
 }
 
 /**
@@ -12475,7 +12645,7 @@ message AppSearchQueryStatsReported {
     // frameworks/base/apex/appsearch/framework/java/android/app/appsearch/AppSearchResult.java
     optional int32 status_code = 5;
 
-    // Overall time used for query including estimated binder latency
+    // Overall time used for query which doesn't include estimated binder latency
     optional int32 total_latency_millis = 6;
 
     // Time used to rewrite the search spec.
@@ -13929,7 +14099,7 @@ message CellBroadcastConfigUpdated  {
  * Logged from Cell Broadcast module:
  *   packages/modules/CellBroadcastService/src/com/android/cellbroadcastservice
  */
-message CellBroadcastServiceFeature {
+message CellBroadcastServiceFeatureChanged {
     // Not for mainline devices, but for android-go devices, OEM can register package names.
     // if there is a data then true otherwise false
     optional bool overlay_additional_cbr_packages = 1;
@@ -13947,7 +14117,7 @@ message CellBroadcastServiceFeature {
  * Logged from Cell Broadcast module:
  *   packages/apps/CellBroadcastReceiver/src/com/android/cellbroadcastreceiver/
  */
-message CellBroadcastReceiverFeature {
+message CellBroadcastReceiverFeatureChanged {
     // Whether to enable alert handling during active voice call
     optional bool alert_during_call = 1;
     // Play alert sound in full volume regardless DND is on
@@ -13972,7 +14142,7 @@ message CellBroadcastReceiverFeature {
  *   packages/modules/CellBroadcastService/src/com/android/cellbroadcastservice/
  *   packages/apps/CellBroadcastReceiver/
  */
-message CellBroadcastModuleError {
+message CellBroadcastModuleErrorReported {
     enum ErrorType {
         ERROR_UNKNOWN = 0;
         ERROR_BAD_CONFIG = 1;
@@ -14219,6 +14389,25 @@ message AppFreezeChanged {
 
     // Time since last unfrozen.
     optional int64 time_unfrozen_millis = 4;
+
+    // The list of reason should be kept in sync with @OomAdjReason in OomAdjuster.java.
+    enum OomAdjReason {
+        NONE = 0;
+        ACTIVITY = 1;
+        FINISH_RECEIVER = 2;
+        START_RECEIVER = 3;
+        BIND_SERVICE = 4;
+        UNBIND_SERVICE = 5;
+        START_SERVICE = 6;
+        GET_PROVIDER = 7;
+        REMOVE_PROVIDER = 8;
+        UI_VISIBILITY = 9;
+        ALLOWLIST = 10;
+        PROCESS_BEGIN = 11;
+        PROCESS_END = 12;
+    }
+
+    optional OomAdjReason unfreeze_reason = 5;
 }
 
 /**
@@ -14589,7 +14778,11 @@ message IncomingSms {
     optional int32 carrier_id = 13;
 
     // Random message ID.
+    // If the value of count is greater than 1, the message_id represents only one of the messages.
     optional int64 message_id = 14;
+
+    // Number of messages with the same properties (see message_id for exception)
+    optional int32 count = 15;
 }
 
 /**
@@ -14641,13 +14834,21 @@ message OutgoingSms {
     optional int32 carrier_id = 11;
 
     // Random message ID.
+    // If the value of count is greater than 1, the message_id represents only one of the messages.
     optional int64 message_id = 12;
 
     // Retry count: 0 for the first attempt and then increasing for each attempt.
+    // If the value of count is greater than 1, the retry_id represents the value associated with
+    // the message defined by message_id.
     optional int32 retry_id = 13;
 
     // Time in milliseconds to complete the SMS send to the network.
+    // If the value of count is greater than 1, this field measures the average time interval.
     optional int64 interval_millis = 14;
+
+    // Number of messages with the same properties (see message_id, retry_id and latency_millis for
+    // exceptions)
+    optional int32 count = 15;
 }
 
 /**
@@ -15452,6 +15653,20 @@ message UserInfo {
     optional bool is_user_running_unlocked = 7;
 }
 
+
+/**
+ * The MultiUserInfo information about maximum supported users on the device.
+ *
+ * This will be pulled from
+ *     frameworks/base/services/core/java/com/android/server/pm/UserManagerService.java
+ */
+message MultiUserInfo {
+    // Maximum users supported on the device
+    optional int32 max_supported_users = 1;
+    // Whether multi user setting is on.
+    optional bool multi_user_setting_on = 2;
+}
+
 /**
  * Logs when accessibility shortcut clicked.
  *
@@ -15689,6 +15904,133 @@ message AudioPowerUsageDataReported {
 
     // Maximum volume (0 ... 1.0)
     optional float maximum_volume = 8;
+}
+
+/**
+ * Logs the Spatializer capability when the Spatializer is created.
+ *
+ * We expect this to occur only once on a healthy system,
+ * when audioserver is initialized.
+ *
+ * On devices that do not support spatialization,
+ * SpatializerLevel returns SPATIALIZER_LEVEL_NONE only.
+ *
+ * Logged from:
+ *   frameworks/av/services/mediametrics/AudioAnalytics.cpp
+ */
+message MediametricsSpatializerCapabilitiesReported {
+    // Available head tracking modes
+    repeated android.media.audio.HeadTrackingMode head_tracking_modes = 1;
+
+    // Available spatializer levels
+    repeated android.media.audio.SpatializerLevel spatializer_levels = 2;
+
+    // Available spatializer modes
+    repeated android.media.audio.SpatializerMode spatializer_modes = 3;
+
+    // Available channel masks, with each channel position bitwise ORed.
+    // One or more bits from
+    // system/media/audio/include/system/audio-hal-enums.h
+    // audio_channel_mask_t, representing the channel configuration
+    // of AudioTrack data.
+    //
+    // Generally the most populated channel_mask is selected for use.
+    repeated int64 channel_masks = 4;
+}
+
+/**
+ * Logs when Spatializer is enabled or disabled for a device.
+ *
+ * The event field indicates the reason for enabling or disabling:
+ * through the Settings UI, startup/boot, or new device detection.
+ *
+ * The presence of this message indicates that the audio device type
+ * supports Spatialization; this is generally a fixed
+ * property of the platform and depends if the device type is considered
+ * BINAURAL or TRANSAURAL, and the Spatializer support for it.
+ *
+ * This logs existing saved state on BOOT and changes afterwards.
+ * Due to rpc to the MediaMetrics service which generates the atom,
+ * the timestamp of the atom may have a slight delay.
+ *
+ * Logged from:
+ *   frameworks/av/services/mediametrics/AudioAnalytics.cpp
+ */
+message MediametricsSpatializerDeviceEnabledReported {
+    // Device type enumeration, e.g. BUILTIN_SPEAKER, BT_A2DP, etc.
+    optional android.media.audio.AudioDeviceInfoType type = 1;
+
+    // The event field indicates the reason for enabling or disabling:
+    // NORMAL: from Settings UI.
+    // BOOT: on startup/boot.
+    // FIRST: on new device detection.
+    optional android.media.audio.SpatializerSettingEvent event = 2;
+
+    // Whether the spatializer is enabled on that device.
+    // This triggers only on a change of state.
+    // If multiple devices share the same type (e.g. bluetooth headsets),
+    // they will register separate messages.
+    optional bool enabled = 3;
+}
+
+/**
+ * Logs whether the HeadTracker is enabled for a device.
+ *
+ * This only changes if there is a HeadTracker associated with the device.
+ *
+ * This logs existing saved state on BOOT and changes afterwards.
+ * Due to rpc to the MediaMetrics service which generates the atom,
+ * the timestamp of the atom may have a slight delay.
+ *
+ * Logged from:
+ *   frameworks/av/services/mediametrics/AudioAnalytics.cpp
+ */
+message MediametricsHeadTrackerDeviceEnabledReported {
+    // Device type enumeration, e.g. BUILTIN_SPEAKER, BT_A2DP, etc.
+    optional android.media.audio.AudioDeviceInfoType type = 1;
+
+    // The event field indicates the reason for enabling or disabling:
+    // NORMAL: from Settings UI.
+    // BOOT: on startup/boot.
+    // FIRST: on new device detection.
+    optional android.media.audio.SpatializerSettingEvent event = 2;
+
+    // Whether the head tracker was enabled or disabled on that device.
+    // This triggers only on a change of state.
+    // If multiple devices share the same type (e.g. bluetooth headsets),
+    // they will register separate messages.
+    optional bool enabled = 3;
+}
+
+/**
+ * Logs whether the HeadTracker is supported for a device.
+ *
+ * Generally a fixed property of the device, but it is possible
+ * that the HeadTracker sensor might be turned off
+ * or be temporarily unavailable.
+ *
+ * This logs existing saved state on BOOT and changes afterwards.
+ * Due to rpc to the MediaMetrics service which generates the atom,
+ * the timestamp of the atom may have a slight delay.
+ *
+ * Logged from:
+ *   frameworks/av/services/mediametrics/AudioAnalytics.cpp
+ */
+message MediametricsHeadTrackerDeviceSupportedReported {
+    // Device type enumeration, e.g. BUILTIN_SPEAKER, BT_A2DP, etc.
+    optional android.media.audio.AudioDeviceInfoType type = 1;
+
+    // The event field indicates the reason for enabling or disabling:
+    // NORMAL: on sensor change.
+    // BOOT: on startup/boot.
+    // FIRST: on new device detection.
+    optional android.media.audio.SpatializerSettingEvent event = 2;
+
+    // Whether the head tracker is supported on that device.
+    // This triggers only on a change of state.
+    // If multiple devices share the same type (e.g. bluetooth headsets),
+    // they will register separate messages.
+    optional bool supported = 3;
 }
 
 /**
@@ -17003,6 +17345,13 @@ message VmCreationRequested {
         PKVM = 1;
         OTHER = 2;
     }
+
+    enum ConfigType {
+        UNKNOWN_CONFIG = 0;
+        VIRTUAL_MACHINE_APP_CONFIG = 1;
+        VIRTUAL_MACHINE_RAW_CONFIG = 2;
+    }
+
     optional Hypervisor hypervisor = 1;
     // Is the VM started in protected mode?
     optional bool is_protected = 2;
@@ -17010,6 +17359,61 @@ message VmCreationRequested {
     optional bool creation_succeeded = 3;
     // Binder exception Code thrown by createVm request
     optional int32 binder_exception_code = 4;
+
+    optional int32 uid = 5 [(is_uid) = true];
+    optional string vm_identifier = 6;
+
+    optional ConfigType config_type = 7;
+    optional int32 num_cpus = 8;
+    optional string cpu_affinity = 9;
+    optional int32 memory_mib = 10;
+    optional string apexes = 11;
+
+    // TODO(seungjaeyoo) Fill information about task_profile
+    // TODO(seungjaeyoo) Fill information about disk_image for raw config
+
+}
+
+/**
+ * Logs telemetry for Android Virtualization framework
+ *
+ * When VM is booted successfully, an atom is pushed that records information about VM.
+ * Logged from: packages/modules/Virtualization/
+ */
+message VmBooted {
+    optional int32 uid = 1 [(is_uid) = true];
+    optional string vm_identifier = 2;
+}
+
+/**
+ * Logs telemetry for Android Virtualization framework
+ *
+ * When VM is exited, an atom is pushed that records information about VM.
+ * Logged from: packages/modules/Virtualization/
+ */
+message VmExited {
+    enum DeathReason {
+        UNKNOWN = 0;
+        INFRASTRUCTURE_ERROR = 1;
+        KILLED = 2;
+        SHUTDOWN = 3;
+        ERROR = 4;
+        REBOOT = 5;
+        CRASH = 6;
+        PVM_FIRMWARE_PUBLIC_KEY_MISMATCH = 7;
+        PVM_FIRMWARE_INSTANCE_IMAGE_CHANGED = 8;
+        BOOTLOADER_PUBLIC_KEY_MISMATCH = 9;
+        BOOTLOADER_INSTANCE_IMAGE_CHANGED = 10;
+        MICRODROID_FAILED_TO_CONNECT_TO_VIRTUALIZATION_SERVICE = 11;
+        MICRODROID_PAYLOAD_HAS_CHANGED = 12;
+        MICRODROID_PAYLOAD_VERIFICATION_FAILED = 13;
+        MICRODROID_INVALID_PAYLOAD_CONFIG = 14;
+        MICRODROID_UNKNOWN_RUNTIME_ERROR = 15;
+        HANGUP = 16;
+    }
+    optional int32 uid = 1 [(is_uid) = true];
+    optional string vm_identifier = 2;
+    optional DeathReason death_reason = 3;
 }
 
 /**
@@ -18674,7 +19078,7 @@ message OdrefreshReported {
         // A placeholder for unknown values.
         TRIGGER_UNKNOWN = 0;
 
-        // ART apex version has changed since time artifacts were generated.
+        // ART APEX version has changed since time artifacts were generated.
         TRIGGER_APEX_VERSION_MISMATCH = 1;
 
         // Dex files on the boot classpath or system_server classpath have changed.
@@ -18696,10 +19100,12 @@ message OdrefreshReported {
         // Preparation for compilation.
         STAGE_PREPARATION = 20;
 
-        // Compilation of primary boot classpath extensions.
+        // Compilation of the boot classpath for the primary architecture
+        // ("primary boot classpath").
         STAGE_PRIMARY_BOOT_CLASSPATH = 30;
 
-        // Compilation of secondary boot classpath extensions.
+        // Compilation of the boot classpath for the secondary architecture
+        // ("secondary boot classpath"), if any.
         STAGE_SECONDARY_BOOT_CLASSPATH = 40;
 
         // Compilation of system_server classpath.
@@ -18739,13 +19145,15 @@ message OdrefreshReported {
 
     optional Status status = 4;
 
-    // Compilation time iof primary boot classpath extensions.
+    // Compilation time of the boot classpath for the primary architecture
+    // ("primary boot classpath"), in seconds.
     optional int32 primary_bcp_compilation_seconds = 5;
 
-    // Compilation time of secondary boot classpath extensions.
+    // Compilation time of the boot classpath for the secondary architecture
+    // ("secondary boot classpath"), if any, in seconds.
     optional int32 secondary_bcp_compilation_seconds = 6;
 
-    // Compilation time of system_server classpath.
+    // Compilation time of system_server classpath, in seconds.
     optional int32 system_server_compilation_seconds = 7;
 
     // Cache space at start of update.
@@ -18753,6 +19161,17 @@ message OdrefreshReported {
 
     // Cache space at end of update.
     optional int32 cache_space_free_end_mib = 9;
+
+    // Compilation time of the boot classpath for the primary architecture
+    // ("primary boot classpath"), in milliseconds.
+    optional int32 primary_bcp_compilation_millis = 10;
+
+    // Compilation time of the boot classpath for the secondary architecture
+    // ("secondary boot classpath"), if any, in milliseconds.
+    optional int32 secondary_bcp_compilation_millis = 11;
+
+    // Compilation time of system_server classpath, in milliseconds.
+    optional int32 system_server_compilation_millis = 12;
 };
 
 /*
@@ -20352,6 +20771,7 @@ message DropboxEntryDropped {
         CLEARING_DATA = 3;
         AGED = 4;
         WRITE_FAILURE = 5;
+        ENTRY_TOO_LARGE = 6;
 
         reserved 1, 2;
     }
@@ -20726,6 +21146,119 @@ message HotwordDetectorEvents {
 }
 
 /**
+ *  Logs for a background fetch process when the runBackgroundFetch() is called.
+ */
+message BackgroundFetchProcessReported {
+    optional int32 latency_in_millis = 1;
+    optional int32 num_of_eligible_to_update_cas = 2;
+    optional android.adservices.service.BackgroundFetchResultCode result_code = 3;
+}
+
+/**
+ *  Logs for an updating a single custom audience process when the updateCustomAudience() is called.
+ */
+message UpdateCustomAudienceProcessReported {
+    optional int32 latency_in_millis = 1;
+    optional android.adservices.service.UpdateCustomAudienceResultCode result_code = 2;
+    optional int32 data_size_of_ads_in_bytes = 3;
+    optional int32 num_of_ads = 4;
+}
+
+/**
+ * Logs for the bidding stage of an ad selection process when the getBuyersCustomAudience() or
+ * the runAdBidding() is called.
+ */
+message RunAdBiddingProcessReported {
+    /* Logs when the getBuyersCustomAudience() is called. */
+    optional int32 get_buyers_custom_audience_latency_in_millis = 1;
+    optional android.adservices.service.ResultCode get_buyers_custom_audience_result_code = 2;
+    optional int32 num_buyers_requested = 3;
+    optional int32 num_buyers_fetched = 4;
+
+    /* Logs when the runAdBidding() is called. */
+    optional int32 num_of_ads_entering_bidding = 5;
+    optional int32 num_of_cas_entering_bidding = 6;
+    optional int32 num_of_cas_post_bidding = 7;
+    optional float ratio_of_cas_selecting_rmkt_ads = 8;
+    optional int32 run_ad_bidding_latency_in_millis = 9;
+    optional android.adservices.service.ResultCode run_ad_bidding_result_code = 10;
+
+    /* Time from the start of the getBuyersCustomAudience() to the end of the runAdBidding(). */
+    optional int32 total_ad_bidding_stage_latency_in_millis = 11;
+}
+
+/**
+ * Logs for the scoring stage of an ad selection process when the runAdScoring() is called.
+ */
+message RunAdScoringProcessReported {
+    /* Logs when the getAdSelectionLogic() is called. */
+    optional int32 get_ad_selection_logic_latency_in_millis = 1;
+    optional android.adservices.service.ResultCode get_ad_selection_logic_result_code = 2;
+    optional android.adservices.service.ScriptType get_ad_selection_logic_script_type = 3;
+    optional int32 fetched_ad_selection_logic_script_size_in_bytes = 4;
+
+    /* Logs when the getTrustedScoringSignals() is called. */
+    optional int32 get_trusted_scoring_signals_latency_in_millis = 5;
+    optional android.adservices.service.ResultCode get_trusted_scoring_signals_result_code = 6;
+    optional int32 fetched_trusted_scoring_signals_data_size_in_bytes = 7;
+
+    /* Logs when the getAdScores() is called. */
+    // the total scoreAds script execution time when getAdScores() is called.
+    optional int32 score_ads_latency_in_millis = 8;
+    // the overall latency of the getAdScores().
+    optional int32 get_ad_scores_latency_in_millis = 9;
+    optional android.adservices.service.ResultCode get_ad_scores_result_code = 10;
+
+    optional int32 num_of_cas_entering_scoring = 11;
+    optional int32 num_of_remarketing_ads_entering_scoring = 12;
+    optional int32 num_of_contextual_ads_entering_scoring = 13;
+    // the overall latency of the runAdScoring process.
+    optional int32 run_ad_scoring_latency_in_millis = 14;
+    optional android.adservices.service.ResultCode run_ad_scoring_result_code = 15;
+}
+
+/* Logs for the ad selection process when the runAdSelection() is called.*/
+message RunAdSelectionProcessReported {
+    /* Logs for the persisting ad selection process. */
+    optional bool is_remarketing_ads_won = 1;
+    optional int32 ad_selection_entry_size_in_bytes = 2;
+    optional int32 persist_ad_selection_latency_in_millis = 3;
+    optional android.adservices.service.ResultCode persist_ad_selection_result_code = 4;
+
+    /* Logs for the overall runAdSelection process. */
+    optional int32 run_ad_selection_latency_in_millis = 5;
+    optional android.adservices.service.ResultCode run_ad_selection_result_code = 6;
+}
+
+/**
+ *  Logs for the bidding process on a single custom audience when the runAdBiddingPerCA() is called.
+ */
+message RunAdBiddingPerCAProcessReported {
+    optional int32 num_of_ads_for_bidding = 1;
+    optional int32 run_ad_bidding_per_ca_latency_in_millis = 2;
+    optional android.adservices.service.ResultCode run_ad_bidding_per_ca_result_code = 3;
+
+    /* Logs for the getting buyer's decision logic script process. */
+    optional int32 get_buyer_decision_logic_latency_in_millis = 4;
+    optional android.adservices.service.ResultCode get_buyer_decision_logic_result_code = 5;
+    optional android.adservices.service.ScriptType buyer_decision_logic_script_type = 6;
+    optional int32 fetched_buyer_decision_logic_script_size_in_bytes = 7;
+
+    /* Logs for the getting trusted bidding signals process. */
+    optional int32 num_of_keys_of_trusted_bidding_signals = 8;
+    optional int32 fetched_trusted_bidding_signals_data_size_in_bytes = 9;
+    optional int32 get_trusted_bidding_signals_latency_in_millis = 10;
+    optional android.adservices.service.ResultCode get_trusted_bidding_signals_result_code = 11;
+
+    /* Logs when runBidding() is called. */
+    // the total generateBids script execution time when runBidding() is called..
+    optional int32 generate_bids_latency_in_millis = 12;
+    // the overall latency of runBidding().
+    optional int32 run_bidding_latency_in_millis = 13;
+    optional android.adservices.service.ResultCode run_bidding_result_code = 14;
+}
+
+/**
  * Logs when an AdServices api is called.
  */
 message AdServicesApiCalled {
@@ -20741,15 +21274,25 @@ message AdServicesApiCalled {
     //  * overrideCustomAudienceRemoteInfo()
     //  * removeCustomAudienceRemoteInfoOverride()
     //  * resetAllCustomAudienceOverrides()
-    //  * runAdSelection()
+    //  * selectAds()
     //  * reportImpression()
     //  * overrideAdSelectionConfigRemoteInfo()
     //  * removeAdSelectionConfigRemoteInfoOverride()
     //  * resetAllAdSelectionConfigRemoteOverrides()
     //
     // Measurement - client side
-    //   * register()
+    //   * register() : SOURCE
+    //   * register() : TRIGGER
     //   * deleteRegistrations()
+    //   * registerWebSource()
+    //   * registerWebTrigger()
+    //   * getMeasurementApiStatus()
+    //
+    // AdId
+    //   * GetAdId()
+    //
+    // AppsetId
+    //   * GetAppsetId()
 
 
     enum AdServicesApiClassType {
@@ -20757,6 +21300,8 @@ message AdServicesApiCalled {
         TARGETING = 1;
         FLEDGE = 2;
         MEASUREMENT = 3;
+        ADID = 4;
+        APPSETID = 5;
     }
 
     enum AdServicesApiName {
@@ -20764,8 +21309,8 @@ message AdServicesApiCalled {
         GET_TOPICS = 1;
         JOIN_CUSTOM_AUDIENCE = 2;
         LEAVE_CUSTOM_AUDIENCE = 3;
-        RUN_AD_SELECTION = 4;
-        REGISTER = 5;
+        SELECT_ADS = 4;
+        REGISTER_SOURCE = 5;
         DELETE_REGISTRATIONS = 6;
         REPORT_IMPRESSION = 7;
         OVERRIDE_CUSTOM_AUDIENCE_REMOTE_INFO = 8;
@@ -20774,6 +21319,12 @@ message AdServicesApiCalled {
         OVERRIDE_AD_SELECTION_CONFIG_REMOTE_INFO = 11;
         REMOVE_AD_SELECTION_CONFIG_REMOTE_INFO_OVERRIDE = 12;
         RESET_ALL_AD_SELECTION_CONFIG_REMOTE_OVERRIDES = 13;
+        GET_ADID = 14;
+        GET_APPSETID = 15;
+        REGISTER_TRIGGER = 16;
+        REGISTER_WEB_SOURCE = 17;
+        REGISTER_WEB_TRIGGER = 18;
+        GET_MEASUREMENT_API_STATUS = 19;
     }
 
     optional AdServicesApiClassType api_class = 1;
@@ -21284,8 +21835,8 @@ message OnsOpportunisticEsimProvisioningComplete {
       // Auto provisioning disabled
       RESULT_AUTO_PROVISIONING_DISABLED = 9;
 
-      // eSIM activation failed
-      RESULT_ESIM_ACTIVATION_FAILED = 10;
+      // eSIM provisioning failed
+      RESULT_ESIM_PROVISIONING_FAILED = 10;
     }
 
     // CBRS carrier id. Filled only while reporting failure cases.
@@ -21822,22 +22373,41 @@ message PrivacySignalsJobFailure {
 }
 
 // Logs when an API call from app to sandbox process is made
+// Next ID: 5
 message SandboxApiCalled {
     enum Method {
         METHOD_UNSPECIFIED = 0;
         LOAD_SDK = 1;
         LOAD_SANDBOX_AND_SDK = 2;
         REQUEST_SURFACE_PACKAGE = 3;
+        SEND_DATA = 4;
+        GET_LOADED_SDK_LIBRARIES_INFO = 5;
+        SYNC_DATA_FROM_CLIENT = 6;
+        UNLOAD_SDK = 7;
     }
-
     // The method which was called.
     optional Method method = 1;
 
-    //Time taken from the initiation of the API till the callback was received
-    optional int32 latency_millis = 2;
+    enum Stage {
+        STAGE_UNSPECIFIED = 0;
+        APP_TO_SYSTEM_SERVER = 1;
+        SYSTEM_SERVER_APP_TO_SANDBOX = 2;
+        LOAD_SANDBOX = 3;
+        SYSTEM_SERVER_TO_SANDBOX = 4;
+        SANDBOX = 5;
+        SDK = 6;
+        SANDBOX_TO_SYSTEM_SERVER = 7;
+        SYSTEM_SERVER_SANDBOX_TO_APP = 8;
+        SYSTEM_SERVER_TO_APP = 9;
+    }
+    // The stage at which latency is being measured.
+    optional Stage stage = 4;
 
     // The success status of the callback
     optional bool success = 3;
+
+    //Time taken from the initiation of the API till the callback was received
+    optional int32 latency_millis = 2;
 }
 
 //Logs periodically the storage of SDKs used by the app
@@ -21886,4 +22456,138 @@ message MobileDataDownloadFileGroupStats {
   // Inverse of the sampling rate used to sample this event.
   optional int32 sampling_interval = 6;
   // Note: we do not have owner_package since that's already transmitted.
+}
+
+/**
+* Logs stats on the result of download attempts of file groups. Provides info on individual download attempts.
+*/
+message MobileDataDownloadDownloadResultReported {
+  // The result of the download attempt
+  optional android.stats.mobiledatadownload.DownloadResult download_result = 1;
+
+  // Specifies which file group the download attempt was for
+  optional MobileDataDownloadFileGroupStats file_group_stats = 2 [(log_mode) = MODE_BYTES];
+}
+
+/**
+* Logs stats on the amount of storage being used by file groups.
+*/
+message MobileDataDownloadFileGroupStorageStatsReported {
+  // Storage stats for all file groups in the MDD Instance
+  optional MobileDataDownloadStorageStats storage_stats = 1  [(log_mode) = MODE_BYTES];
+  // All the bytes used by mdd file groups
+  optional int64 total_mdd_bytes_used = 2;
+  // All the bytes used in the entire mdd directory
+  optional int64 total_mdd_directory_bytes_used = 3;
+}
+
+/**
+* Container for MobileDataDownloadFileGroupStorageStats
+*/
+message MobileDataDownloadStorageStats {
+    repeated MobileDataDownloadFileGroupStorageStats mobile_data_download_file_group_storage_stats = 1;
+}
+
+/**
+* Storage stats for a single file group. This is logged as a nested field and is not meant to be logged as a top level proto.
+*/
+message MobileDataDownloadFileGroupStorageStats {
+  // The total number of bytes used by this file group
+  optional int64 total_bytes_used = 1;
+  // The total number of inline file bytes used by this file group
+  optional int64 total_inline_bytes_used = 2;
+  // The number of bytes used for the downloaded version of the file group
+  optional int64 downloaded_group_bytes_used = 3;
+  // Specifies which file group this storage is associated with
+  optional MobileDataDownloadFileGroupStats file_group_stats = 4 [(log_mode) = MODE_BYTES];
+}
+
+// Logs Display Brightness change events.
+message DisplayBrightnessChanged {
+
+    enum Reason {
+        REASON_UNKNOWN = 0;
+        REASON_MANUAL = 1;
+    }
+
+    // Display brightness before the brightness event, in nits.
+    optional float initial_nits = 1;
+
+    // Display brightness after the brightness event, in nits.
+    optional float end_nits = 2;
+
+    // Estimated ambient light, in lux.
+    optional float lux = 3;
+
+    // Physical display id, with format $ADAPTER_PREFIX:$ID, in this case
+    // "local:$PHYSICAL_ID".
+    optional string physical_display_id = 4;
+
+    // Whether the short term model was active at the time of the event.
+    optional bool short_term_model_active = 5;
+
+    // The factor to adjust the screen brightness in low power mode in the range
+    // 0 (screen off) to 1 (no change).
+    // If not applied, this is set to -1.
+    optional float power_brightness_factor = 6;
+
+    // The level of Reduce Bright Colors (RBC) intensity, the range is [0, 100].
+    // If RBC is not enabled, this is set to -1;
+    optional int32 reduce_bright_colors_strength = 7;
+
+    // Max nits value when High Brightness Mode (HBM) is enabled.
+    // If HBM is not enabled, this is set to -1;
+    optional float hbm_current_max = 8;
+
+    // Thermal throttling cap.
+    // If thermal throttling not enabled, this is -1.
+    optional float thermal_throttling_cap = 9;
+
+    // Whether adaptive brightness is enabled.
+    optional bool adaptive_brightness_enabled = 10;
+
+    // Reason that triggered the brightness event to occur.
+    optional Reason reason = 11;
+}
+
+
+/**
+ * Logs when various Privacy Sandbox settings are used.
+ */
+message AdServicesSettingsUsageReported {
+    enum AdServiceSettingRegion {
+        REGION_UNSPECIFIED = 0;
+        EU = 1;
+        ROW = 2;
+    }
+
+    optional AdServiceSettingRegion region = 1;
+
+    enum AdServiceSettingsName {
+        ACTION_UNSPECIFIED = 0;
+        REQUESTED_NOTIFICATION = 1;
+        LANDING_PAGE_DISPLAYED = 2;
+        OPT_IN_SELECTED = 3;
+        OPT_OUT_SELECTED = 4;
+        MANAGE_TOPICS_SELECTED = 5;
+        MANAGE_APPS_SELECTED = 6;
+        RESET_TOPIC_SELECTED = 7;
+        RESET_APP_SELECTED = 8;
+        BLOCK_TOPIC_SELECTED = 9;
+        UNBLOCK_TOPIC_SELECTED = 10;
+        BLOCK_APP_SELECTED = 11;
+        UNBLOCK_APP_SELECTED = 12;
+    }
+
+    optional AdServiceSettingsName action = 2;
+}
+
+// Logs daily ambient brightness stats.
+message AmbientBrightnessStatsReported {
+
+    // How much time was spent in each of the buckets, in seconds.
+    repeated float bucket_size_seconds = 1;
+
+    // Ambient brightness values for creating bucket boundaries from.
+    repeated float bucket_boundary_lux = 2;
 }

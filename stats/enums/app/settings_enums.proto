@@ -1052,6 +1052,21 @@ enum Action {
     // CATEGORY: SETTINGS
     // OS: T
     ACTION_DOCK_SETUP_STEP_COMPLETE = 1798;
+
+    // ACTION: Settings > Battery Usage > Click daily chart time slot
+    // CATEGORY: SETTINGS
+    // OS: T
+    ACTION_BATTERY_USAGE_DAILY_TIME_SLOT = 1799;
+
+    // ACTION: Settings > Battery Usage > Click daily chart show all
+    // CATEGORY: SETTINGS
+    // OS: T
+    ACTION_BATTERY_USAGE_DAILY_SHOW_ALL = 1800;
+
+    // Custom tag to log the battery history is loaded
+    // CATEGORY: SETTINGS
+    // OS: T
+    ACTION_BATTERY_HISTORY_LOADED = 1801;
 }
 
 /**
@@ -2041,6 +2056,12 @@ enum PageId {
 
     // OPEN: Settings > System > Input & Gesture > Double twist gesture
     SETTINGS_GESTURE_DOUBLE_TWIST = 755;
+
+    // OPEN: Settings > System > Languages
+    SETTINGS_LANGUAGES_CATEGORY = 756;
+
+    // OPEN: Settings > System > Keyboard
+    SETTINGS_KEYBOARDS_CATEGORY = 757;
 
     // OPEN: Settings > Apps > Default Apps > Default browser
     DEFAULT_BROWSER_PICKER = 785;
@@ -3420,6 +3441,17 @@ enum PageId {
     // CATEGORY: SETTINGS
     // OS: T
     BATTERY_OPTIMIZED_APPS_LIST = 1931;
+
+    // OPEN: Settings -> Developer Options -> Enable full NFC Snoop or verbose
+    // Log > NfcRebootDialog
+    // CATEGORY: SETTINGS
+    // OS: T
+    DIALOG_NFC_ENABLE_DETAIL_LOG = 1932;
+
+    // OPEN: Settings > Accessibility > Software Cursor
+    // CATEGORY: SETTINGS
+    // OS: U
+    ACCESSIBILITY_TOGGLE_SOFTWARE_CURSOR = 1933;
 }
 
 // Battery Saver schedule types.
