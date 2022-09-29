@@ -1013,6 +1013,45 @@ enum Action {
     // CATEGORY: SETTINGS
     // OS: T
     ACTION_DISABLE_AUTO_ROTATION_DEVICE_STATE = 1791;
+
+    // ACTION: Settings > Apps > Battery optimized apps > filter set to
+    // <All apps>
+    // CATEGORY: SETTINGS
+    // OS: T
+    ACTION_BATTERY_OPTIMIZED_APPS_FILTER_ALL_APPS = 1792;
+
+    // ACTION: Settings > Apps > Battery optimized apps > filter set to
+    // <restricted>
+    // CATEGORY: SETTINGS
+    // OS: T
+    ACTION_BATTERY_OPTIMIZED_APPS_FILTER_RESTRICTED = 1793;
+
+    // ACTION: Settings > Apps > Battery optimized apps > filter set to
+    // <unrestricted>
+    // CATEGORY: SETTINGS
+    // OS: T
+    ACTION_BATTERY_OPTIMIZED_APPS_FILTER_UNRESTRICTED = 1794;
+
+    // ACTION: Settings > Apps > Battery optimized apps > filter set to
+    // <optimized>
+    // CATEGORY: SETTINGS
+    // OS: T
+    ACTION_BATTERY_OPTIMIZED_APPS_FILTER_OPTIMIZED = 1795;
+
+    // Custom tag to log changes to the dock setup flow state
+    // CATEGORY: SETTINGS
+    // OS: T
+    ACTION_DOCK_SETUP_STATE_CHANGED = 1796;
+
+    // Custom tag to log the start of each step in the dock setup flow
+    // CATEGORY: SETTINGS
+    // OS: T
+    ACTION_DOCK_SETUP_STEP_START = 1797;
+
+    // Custom tag to log the result of each step in the dock setup flow
+    // CATEGORY: SETTINGS
+    // OS: T
+    ACTION_DOCK_SETUP_STEP_COMPLETE = 1798;
 }
 
 /**
@@ -1908,44 +1947,41 @@ enum PageId {
     // OPEN: Settings > Display > Night light > Set end time dialog
     DIALOG_NIGHT_DISPLAY_SET_END_TIME = 589;
 
+    // OPEN: Settings > User > Edit info dialog
+    DIALOG_USER_EDIT = 590;
 
+    // OPEN: Settings > User > Confirm remove dialog
+    DIALOG_USER_REMOVE = 591;
 
-        // OPEN: Settings > User > Edit info dialog
-        DIALOG_USER_EDIT = 590;
+    // OPEN: Settings > User > Enable calling dialog
+    DIALOG_USER_ENABLE_CALLING = 592;
 
-        // OPEN: Settings > User > Confirm remove dialog
-        DIALOG_USER_REMOVE = 591;
+    // OPEN: Settings > User > Enable calling and sms dialog
+    DIALOG_USER_ENABLE_CALLING_AND_SMS = 593;
 
-        // OPEN: Settings > User > Enable calling dialog
-        DIALOG_USER_ENABLE_CALLING = 592;
+    // OPEN: Settings > User > Cannot manage device message dialog
+    DIALOG_USER_CANNOT_MANAGE = 594;
 
-        // OPEN: Settings > User > Enable calling and sms dialog
-        DIALOG_USER_ENABLE_CALLING_AND_SMS = 593;
+    // OPEN: Settings > User > Add user dialog
+    DIALOG_USER_ADD = 595;
 
-        // OPEN: Settings > User > Cannot manage device message dialog
-        DIALOG_USER_CANNOT_MANAGE = 594;
+    // OPEN: Settings > User > Setup user dialog
+    DIALOG_USER_SETUP = 596;
 
-        // OPEN: Settings > User > Add user dialog
-        DIALOG_USER_ADD = 595;
+    // OPEN: Settings > User > Setup profile dialog
+    DIALOG_USER_SETUP_PROFILE = 597;
 
-        // OPEN: Settings > User > Setup user dialog
-        DIALOG_USER_SETUP = 596;
+    // OPEN: Settings > User > Choose user type dialog
+    DIALOG_USER_CHOOSE_TYPE = 598;
 
-        // OPEN: Settings > User > Setup profile dialog
-        DIALOG_USER_SETUP_PROFILE = 597;
+    // OPEN: Settings > User > Need lockscreen dialog
+    DIALOG_USER_NEED_LOCKSCREEN = 599;
 
-        // OPEN: Settings > User > Choose user type dialog
-        DIALOG_USER_CHOOSE_TYPE = 598;
+    // OPEN: Settings > User > Confirm exit guest mode dialog
+    DIALOG_USER_CONFIRM_EXIT_GUEST = 600;
 
-        // OPEN: Settings > User > Need lockscreen dialog
-        DIALOG_USER_NEED_LOCKSCREEN = 599;
-
-        // OPEN: Settings > User > Confirm exit guest mode dialog
-        DIALOG_USER_CONFIRM_EXIT_GUEST = 600;
-
-        // OPEN: Settings > User > Edit user profile dialog
-        DIALOG_USER_EDIT_PROFILE = 601;
-
+    // OPEN: Settings > User > Edit user profile dialog
+    DIALOG_USER_EDIT_PROFILE = 601;
 
     // OPEN: Settings > Wifi > Saved AP > Edit dialog
     DIALOG_WIFI_SAVED_AP_EDIT = 602;
@@ -2008,6 +2044,7 @@ enum PageId {
 
     // OPEN: Settings > Apps > Default Apps > Default browser
     DEFAULT_BROWSER_PICKER = 785;
+
     // OPEN: Settings > Apps > Default Apps > Default emergency app
     DEFAULT_EMERGENCY_APP_PICKER = 786;
 
@@ -2022,7 +2059,6 @@ enum PageId {
 
     // OPEN: Settings > Apps > Notification > Notification Assistant
     DEFAULT_NOTIFICATION_ASSISTANT = 790;
-
 
     // OPEN: Settings > Apps > Default Apps > Warning dialog to confirm selection
     DEFAULT_APP_PICKER_CONFIRMATION_DIALOG = 791;
@@ -2102,7 +2138,6 @@ enum PageId {
     // CATEGORY: SETTINGS
     SETTINGS_LOCK_SCREEN_PREFERENCES = 882;
 
-
     // OPEN: Settings -> Display -> When in VR Mode
     VR_DISPLAY_PREFERENCE = 921;
 
@@ -2133,7 +2168,6 @@ enum PageId {
     // CATEGORY: SETTINGS
     // OS: O
     ENTERPRISE_PRIVACY_PERMISSIONS = 939;
-
 
     // OPEN: Settings > Security > Managed Device Info > Default apps
     // CATEGORY: SETTINGS
@@ -2507,7 +2541,6 @@ enum PageId {
     // OS: Q
     NOTIFICATION_ZEN_MODE_OVERRIDING_APPS = 1588;
 
-
     // OPEN: Settings > Sound & notification > Do Not Disturb > See all exceptions >
     // Allow apps to override > Choose app
     // CATEGORY: SETTINGS
@@ -2525,8 +2558,6 @@ enum PageId {
 
     // OPEN: Settings > Apps & Notifications -> Special app access -> Financial Apps Sms Access
     SETTINGS_FINANCIAL_APPS_SMS_ACCESS = 1597;
-
-
 
     // OPEN: Settings > Sound > Do Not Disturb > Schedules > (Click on system rule)
     // > Do Not Disturb behavior
@@ -3356,6 +3387,39 @@ enum PageId {
     // CATEGORY: SETTINGS
     // OS: T
     DIALOG_RESET_SETTINGS = 1924;
+
+    // OPEN: Settings > Developer Options > Predictive gesture animations > Click
+    // CATEGORY: SETTINGS
+    // OS: T
+    DIALOG_BACK_ANIMATIONS = 1925;
+
+    // OPEN: Le audio broadcast dialog > Find a broadcast > Scan QR code
+    // CATEGORY: SETTINGS
+    // OS: T
+    LE_AUDIO_BROADCAST_SCAN_QR_CODE = 1926;
+
+    // OPEN: Settings > About phone > Limited Warranty
+    // CATEGORY: SETTINGS
+    // OS: T
+    LIMITED_WARRANTY_COUNTRY_LIST = 1927;
+
+    // OPEN: Settings > About phone > Limited Warranty > Click any country
+    // CATEGORY: SETTINGS
+    // OS: T
+    LIMITED_WARRANTY_DETAILS = 1928;
+
+    // OPEN: Settings > Sound > Clear Calling
+    CLEAR_CALLING = 1929;
+
+    // The dialog will show after successfully pairing one of the binaural hearing aids
+    // CATEGORY: SETTINGS
+    // OS: T
+    DIALOG_ACCESSIBILITY_HEARING_AID_PAIR_ANOTHER = 1930;
+
+    // OPEN: Settings > Apps > Battery optimized apps
+    // CATEGORY: SETTINGS
+    // OS: T
+    BATTERY_OPTIMIZED_APPS_LIST = 1931;
 }
 
 // Battery Saver schedule types.
