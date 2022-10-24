@@ -791,11 +791,14 @@ message Atom {
         HearingAidInfoReported hearing_aid_info_reported = 513 [(module) = "framework"];
         DeviceWideJobConstraintChanged device_wide_job_constraint_changed =
             514 [(module) = "framework"];
-        AmbientModeChanged ambient_mode_changed_reported = 515 [(module) = "framework"];
+        AmbientModeChanged ambient_mode_changed = 515 [(module) = "framework"];
         ANRLatencyReported anr_latency_reported = 516 [(module) = "framework"];
         ResourceValueApiStatisticsReported resource_api_info = 517 [(module) = "framework"];
         SystemDefaultNetworkChanged system_default_network_changed =
             518 [(module) = "network_stack"];
+        IwlanSetupDataCallResultReported iwlan_setup_data_call_result_reported = 519 [(module) = "iwlan"];
+        IwlanPdnDisconnectedReasonReported iwlan_pdn_disconnected_reason_reported = 520 [(module) = "iwlan"];
+        AirplaneModeSessionReported airplane_mode_session_reported = 521 [(module) = "wifi"];
         // StatsdStats tracks platform atoms with ids upto 750.
         // Update StatsdStats::kMaxPushedAtomId when atom ids here approach that value.
     }
@@ -1530,6 +1533,20 @@ message WifiP2pConnectionReported {
         GROUP_OWNER = 1;
         GROUP_CLIENT = 2;
     }
+    enum Band {
+        // Unknown band/frequency
+        BAND_UNKNOWN = 0;
+        // any band
+        BAND_AUTO = 1;
+        // With 2G band
+        BAND_2G = 2;
+        // With 5G band
+        BAND_5G = 3;
+        // With 6G band
+        BAND_6G = 4;
+        // With a specific frequency
+        BAND_FREQUENCY = 5;
+    }
     // Type of the connection.
     optional Type type = 1;
     // Duration to connect in millis.
@@ -1541,6 +1558,13 @@ message WifiP2pConnectionReported {
     // Group role. This could be unknown with connect() call when the WifiConfig doesn't have the
     // credential.
     optional GroupRole group_role = 5;
+    // Group band preference
+    optional Band band = 6;
+    // Group frequency in MHz if positive. Otherwise, no frequency preference.
+    optional int32 frequency_mhz = 7;
+    // STA mode channel frequency. 0 means unknown.
+    optional int32 sta_frequency_mhz = 8;
+    //
 }
 
 /**
@@ -4189,6 +4213,21 @@ message SmartSpaceCardReported {
     optional int32 received_latency_millis = 11;
     // The sub cards.
     optional SmartSpaceSubcards subcards_info = 12 [(log_mode) = MODE_BYTES];
+    // Holds all the dimensions for this event. See go/ss-dimensional-logging for details.
+    optional SmartspaceCardDimensionalInfo dimensional_info = 13 [(log_mode) = MODE_BYTES];
+}
+
+// Holds all the dimensions tied to a Smartspace event.
+message SmartspaceCardDimensionalInfo {
+    repeated SmartspaceFeatureDimension feature_dimensions = 1;
+}
+
+message SmartspaceFeatureDimension {
+    // This maps to an enum value in Android System Intelligence.
+    optional int32 feature_dimension_id = 1;
+
+    // The value for this dimension.
+    optional int32 feature_dimension_value = 2;
 }
 
 /**
@@ -5138,6 +5177,9 @@ message AppStartFullyDrawn {
 
     // The hash value of the activity name.
     optional int32 activity_name_hash = 13;
+
+    // The timestamp(SystemClock#elapsedRealtime()) when starting activity.
+    optional int64 activity_start_timestamp_millis = 14;
 }
 
 /**
@@ -6807,11 +6849,14 @@ message BootTimeEventElapsedTime {
         // Time when sys.boot_completed prop is set.
         // Logged from bootstat.
         BOOT_COMPLETE = 2;
-        // BOOT_COMPLETE for encrypted device.
+        // BOOT_COMPLETE for a device that uses full-disk encryption.  Note that
+        // no devices running Android 13 or later use full-disk encryption, as
+        // it has been replaced by file-based encryption.
         BOOT_COMPLETE_ENCRYPTION = 3;
-        // BOOT_COMPLETE for device with no encryption.
+        // BOOT_COMPLETE for a device that doesn't use full-disk encryption.
         BOOT_COMPLETE_NO_ENCRYPTION = 4;
-        // Adjusted BOOT_COMPLETE for encrypted device extracting decryption time.
+        // Adjusted BOOT_COMPLETE for a device that uses full-disk encryption,
+        // omitting the decryption time.
         BOOT_COMPLETE_POST_DECRYPT = 5;
         // BOOT_COMPLETE after factory reset.
         FACTORY_RESET_BOOT_COMPLETE = 6;
@@ -9362,22 +9407,41 @@ message AppCompactedV2 {
   optional android.app.OomChangeReasonEnum oom_change_reason = 8;
 }
 
+// Logs each upstream for a successful switch over
+message UpstreamEvent {
+  // Transport type of upstream network
+  optional android.stats.connectivity.UpstreamType upstream_type = 1;
+
+  // A time period that an upstream continued
+  optional int64 duration_millis = 2;
+}
+
+message UpstreamEvents {
+  repeated UpstreamEvent upstream_event = 1;
+}
+
 /**
  * Logs when a Tethering event occurs.
  *
  */
 message NetworkTetheringReported {
-  // tethering error code
+  // Tethering error code
   optional android.stats.connectivity.ErrorCode error_code = 1;
 
-  // tethering downstream type
+  // Tethering downstream type
   optional android.stats.connectivity.DownstreamType downstream_type = 2;
 
-  // transport type of upstream network
-  optional android.stats.connectivity.UpstreamType upstream_type = 3;
+  // Transport type of upstream network
+  optional android.stats.connectivity.UpstreamType upstream_type = 3 [deprecated = true];
 
-  // The user type of Tethering
+  // The user type of switching tethering
   optional android.stats.connectivity.UserType user_type= 4;
+
+  // Log each transport type of upstream network event
+  optional UpstreamEvents upstream_events = 5  [(log_mode) = MODE_BYTES];
+
+  // A time period that a downstreams exists
+  optional int64 duration_millis = 6;
 }
 
 /**
@@ -17993,6 +18057,40 @@ message WifiPnoScanReported {
 }
 
 /**
+ * Logs when an airplane mode session happens.
+ *
+ * Logged from:
+ *   packages/modules/Wifi/service/java/com/android/server/wifi/WifiMetrics.java
+ *   packages/modules/Bluetooth/service/java/com/android/server/bluetooth/BluetoothAirplaneModeListener.java
+ */
+message AirplaneModeSessionReported {
+    enum PackageName {
+        WIFI = 0;
+        BLUETOOTH = 1;
+    }
+    // Module recording the airplane mode session
+    optional PackageName package_name = 1;
+    // State of the module before entering airplane mode
+    // False - module off
+    // True - module on
+    optional bool previous_state = 2;
+    // State of the module at the beginning of airplane mode
+    optional bool entering_state = 3;
+    // State of the module at the end of airplane mode
+    optional bool exiting_state = 4;
+    // Whether the user has activated the feature by
+    // toggling the module in airplane mode
+    optional bool feature_active = 5;
+    // Whether the user toggled the module during current airplane mode
+    optional bool user_toggled = 6;
+    // Whether the user toggled the module within one minute
+    optional bool user_toggled_within_minute = 7;
+    // Whether media profile was connected before entering airplane mode
+    // Only applicable to the Bluetooth module
+    optional bool media_profile_connected = 8;
+}
+
+/**
  * Logs when the entitlement configuration of an IMS service is queried/updated.
  *
  * Logged from: ImsServiceEntitlement app
@@ -22773,12 +22871,12 @@ message HearingAidInfoReported {
  * Logs when Ambient/OFFLOAD Mode is entered or exited.
  *
  * Logged from:
- *  1. package: vendor/google_clockwork/packages/Ambient/src/com/google/android/wearable/ambient
- *  (possible class: AmbiactiveActivityManager.java)
- *  2. package: vendor/google_clockwork/packages/Ambient/src/com/google/android/wearable/ambient/autoresume
- *  (possible class: AmbientLiteFlowController.java)
- *  3. package: frameworks/opt/wear/src/com/google/android/clockwork/displayoffload
- *  (possible class: DisplayOffloadService.java)
+ *  1. vendor/google_clockwork/packages/Ambient/src/com/google/
+ *     android/wearable/ambient/AmbientService.java
+ *  2. vendor/google_clockwork/packages/Ambient/src/com/google/android/
+ *     wearable/ambient/autoresume/AmbientLiteFlowController.java
+ *  3. frameworks/opt/wear/src/com/google/android/clockwork/
+ *     displayoffload/DisplayOffloadService.java
  */
 message AmbientModeChanged {
     enum AmbientStateEnum {
@@ -22825,4 +22923,90 @@ message ResourceValueApiStatisticsReported {
   optional int32 l2_ns = 10;
   optional int32 l3_ns = 11;
   optional int32 l4_ns = 12;
+}
+
+/**
+
+ * Logs when Iwlan responds the setup data call request.
+ *
+ * Logged from:
+ *   packages/services/Iwlan/src/com/google/android/iwlan/IwlanDataService.java
+ */
+message IwlanSetupDataCallResultReported {
+  enum IwlanError {
+    NO_ERROR = 0;
+    IKE_PROTOCOL_EXCEPTION = 1;
+    IKE_INTERNAL_IO_EXCEPTION = 2;
+    IKE_GENERIC_EXCEPTION = 3;
+    EPDG_SELECTOR_SERVER_SELECTION_FAILED = 4;
+    TUNNEL_TRANSFORM_FAILED = 5;
+    SIM_NOT_READY_EXCEPTION = 6;
+    NETWORK_FAILURE = 7;
+    UNKNOWN_EXCEPTION = 8;
+  }
+
+  // Setup data call apn type
+  // See go/apntypedefinition
+  optional int32 apn_type = 1;
+  // Is the request for handover
+  optional bool is_handover = 2;
+  // ePDG server address
+  optional string epdg_server_address = 3;
+  // If the request type is handover, record the source network type
+  // See
+  // https://source.corp.google.com/android/frameworks/base/telephony/java/android/telephony/TelephonyManager.java;l=2906
+  optional int32 source_rat = 4;
+  // If the request type is handover, record the source network roaming status
+  optional bool is_cellular_roaming = 5;
+  // Is network connected
+  optional bool is_network_connected = 6;
+  // Default network transport type
+  // See
+  // https://source.corp.google.com/android/packages/modules/Connectivity/framework/src/android/net/NetworkCapabilities.java;l=1099
+  optional int32 transport_type = 7;
+  // Setup result
+  optional int32 setup_request_result = 8;
+  // Iwlan error code if setup failed
+  optional IwlanError iwlan_error = 9;
+  // Data call fail cause
+  // See
+  // https://source.corp.google.com/android/frameworks/base/telephony/java/android/telephony/DataFailCause.java;l=35
+  optional int32 data_call_fail_cause = 10;
+  // Setup request processing duration
+  optional int32 processing_duration_millis = 11;
+  // Time for doing ePDG server selection through DNS query of FQDNs
+  optional int32 epdg_server_selection_duration_millis = 12;
+  // Time for establishing IKE tunnel
+  optional int32 ike_tunnel_establishment_duration_millis = 13;
+  // Tunnel State
+  // See
+  // https://source.corp.google.com/android/packages/services/Iwlan/src/com/google/android/iwlan/IwlanDataService.java;l=213
+  optional int32 tunnel_state = 14;
+  // Handover failure mode
+  // See
+  // https://source.corp.google.com/android/frameworks/base/telephony/java/android/telephony/data/DataCallResponse.java;l=83
+  optional int32 handover_failure_mode = 15;
+  // Retry duration
+  optional int32 retry_duration_millis = 16;
+}
+
+/**
+ * Logs when Iwlan reports IWLAN PDN disconnected without deactivation request.
+ *
+ * Logged from:
+ *   packages/services/Iwlan/src/com/google/android/iwlan/IwlanDataService.java
+ */
+message IwlanPdnDisconnectedReasonReported {
+  // Disconnection cause
+  // See
+  // https://source.corp.google.com/android/frameworks/base/telephony/java/android/telephony/DataFailCause.java;l=35
+  optional int32 cause = 1;
+  // Is network connected
+  optional bool is_network_connected = 2;
+  // default network transport type
+  // See
+  // https://source.corp.google.com/android/packages/services/Iwlan/src/com/google/android/iwlan/IwlanDataService.java;l=97
+  optional int32 transport_type = 3;
+  // Wifi signal level
+  optional int32 wifi_signal_level = 4;
 }
