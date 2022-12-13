@@ -23,6 +23,7 @@ option java_package = "com.android.os";
 option java_outer_classname = "AtomsProto";
 
 import "frameworks/proto_logging/stats/attribution_node.proto";
+import "frameworks/proto_logging/stats/atoms/gps/gps_atoms.proto";
 import "frameworks/proto_logging/stats/atom_field_options.proto";
 import "frameworks/proto_logging/stats/enums/adservices/fledge/enums.proto";
 import "frameworks/proto_logging/stats/enums/anr/enums.proto";
@@ -53,6 +54,7 @@ import "frameworks/proto_logging/stats/enums/mms/enums.proto";
 import "frameworks/proto_logging/stats/enums/nearby/enums.proto";
 import "frameworks/proto_logging/stats/enums/net/enums.proto";
 import "frameworks/proto_logging/stats/enums/neuralnetworks/enums.proto";
+import "frameworks/proto_logging/stats/enums/nfc/enums.proto";
 import "frameworks/proto_logging/stats/enums/os/enums.proto";
 import "frameworks/proto_logging/stats/enums/server/connectivity/data_stall_event.proto";
 import "frameworks/proto_logging/stats/enums/server/display/enums.proto";
@@ -118,7 +120,7 @@ message Atom {
         BleScanResultReceived ble_scan_result_received = 4 [(module) = "bluetooth"];
         SensorStateChanged sensor_state_changed =
                 5 [(module) = "framework", (module) = "statsdtest"];
-        GpsScanStateChanged gps_scan_state_changed = 6 [(module) = "framework"];
+        gps.GpsScanStateChanged gps_scan_state_changed = 6 [(module) = "framework"];
         SyncStateChanged sync_state_changed = 7 [(module) = "framework", (module) = "statsdtest"];
         ScheduledJobStateChanged scheduled_job_state_changed =
                 8 [(module) = "framework", (module) = "statsdtest"];
@@ -803,8 +805,8 @@ message Atom {
         IwlanSetupDataCallResultReported iwlan_setup_data_call_result_reported = 519 [(module) = "iwlan"];
         IwlanPdnDisconnectedReasonReported iwlan_pdn_disconnected_reason_reported = 520 [(module) = "iwlan"];
         AirplaneModeSessionReported airplane_mode_session_reported = 521 [(module) = "wifi", (module) = "bluetooth"];
-        VmCpuStatusReported vm_cpu_status_reported = 522 [(module) = "virtualizationservice"];
-        VmMemStatusReported vm_mem_status_reported = 523 [(module) = "virtualizationservice"];
+        VmCpuStatusReported vm_cpu_status_reported = 522 [(module) = "virtualizationservice", deprecated = true];
+        VmMemStatusReported vm_mem_status_reported = 523 [(module) = "virtualizationservice", deprecated = true];
         PackageInstallationSessionReported package_installation_session_reported = 524 [(module) = "framework"];
         DefaultNetworkRematchInfo default_network_rematch_info = 525 [(module) = "connectivity"];
         NetworkSelectionPerformance network_selection_performance = 526 [(module) = "connectivity"];
@@ -859,12 +861,17 @@ message Atom {
         GameModeChanged game_mode_changed = 555 [(module) = "framework"];
         GameModeConfigurationChanged game_mode_configuration_changed = 556 [(module) = "framework"];
         BedtimeModeStateChanged bedtime_mode_state_changed = 557 [(module) = "framework"];
+        NetworkSliceSessionEnded network_slice_session_ended = 558 [(module) = "connectivity"];
+        NetworkSliceDailyDataUsageReported network_slice_daily_data_usage_reported = 559 [(module) = "connectivity"];
+        NfcTagTypeOccurred nfc_tag_type_occurred = 560 [(module) = "nfc"];
+        NfcAIDConflictOccurred nfc_aid_conflict_occurred = 561 [(module) = "nfc"];
+        NfcReaderConflictOccurred nfc_reader_conflict_occurred = 562 [(module) = "nfc"];
         // StatsdStats tracks platform atoms with ids upto 750.
         // Update StatsdStats::kMaxPushedAtomId when atom ids here approach that value.
     }
 
     // Pulled events will start at field 10000.
-    // Next: 10168
+    // Next: 10169
     oneof pulled {
         WifiBytesTransfer wifi_bytes_transfer = 10000 [(module) = "framework"];
         WifiBytesTransferByFgBg wifi_bytes_transfer_by_fg_bg = 10001 [(module) = "framework"];
@@ -1064,6 +1071,7 @@ message Atom {
         GameModeInfo game_mode_info = 10165 [(module) = "framework"];
         GameModeConfiguration game_mode_configuration = 10166 [(module) = "framework"];
         GameModeListener game_mode_listener = 10167 [(module) = "framework"];
+        NetworkSliceRequestCountSample network_slice_request_count = 10168 [(module) = "connectivity"];
     }
 
     // DO NOT USE field numbers above 100,000 in AOSP.
@@ -1625,7 +1633,8 @@ message WifiP2pConnectionReported {
     optional int32 frequency_mhz = 7;
     // STA mode channel frequency. 0 means unknown.
     optional int32 sta_frequency_mhz = 8;
-    //
+    // The uid of the app that initiates the connection.
+    optional int32 uid = 9 [(is_uid) = true];
 }
 
 /**
@@ -1830,22 +1839,6 @@ message SensorStateChanged {
         ON = 1;
     }
     optional State state = 3;
-}
-
-/**
- * Logs when GPS state changes.
- *
- * Logged from:
- *   frameworks/base/core/java/com/android/internal/os/BatteryStatsImpl.java
- */
-message GpsScanStateChanged {
-    repeated AttributionNode attribution_node = 1;
-
-    enum State {
-        OFF = 0;
-        ON = 1;
-    }
-    optional State state = 2;
 }
 
 /**
@@ -5597,11 +5590,27 @@ message ForegroundServiceStateChanged {
         FOREGROUND_SERVICE_TYPE_MEDIA_PROJECTION = 0x0020; // 1 << 5
         FOREGROUND_SERVICE_TYPE_CAMERA = 0x0040; // 1 << 6
         FOREGROUND_SERVICE_TYPE_MICROPHONE = 0x0080; // 1 << 7
+        FOREGROUND_SERVICE_TYPE_HEALTH = 0x0100; // 1 << 8
+        FOREGROUND_SERVICE_TYPE_REMOTE_MESSAGING = 0x0200; // 1 << 9
+        FOREGROUND_SERVICE_TYPE_SYSTEM_EXEMPTED = 0x0400; // 1 << 10
+        FOREGROUND_SERVICE_TYPE_SHORT_SERVICE = 0x0800; // 1 << 11
+        FOREGROUND_SERVICE_TYPE_SPECIAL_USE = 0x40000000; // 1 << 30
     }
 
     // The foreground service types, must be one or a combination of the types
     // in the ForegroundServiceType above.
     optional int32 fgs_types = 16;
+    // The result check code for the fgs type enforcement.
+    optional android.app.FgsTypePolicyCheckEnum fgs_type_check_code = 17;
+    // If true, this FGS service is a delegate (instead of real FGS).
+    optional bool is_delegate = 18;
+    // The actual client app's uid.
+    optional int32 delegate_client_uid = 19 [(is_uid) = true];
+    // The service module that start/stop the delegate, could be
+    // MediaSessionService, VOIP, Camera, Audio, Location etc.
+    // The enum is defined in interface
+    // ForegroundServiceDelegationOptions.DelegationService
+    optional int32 delegation_service = 20;
 }
 
 /**
@@ -6574,6 +6583,9 @@ message ServiceRequestEventReported {
 
     /** The start type of the host process. */
     optional ProcessStartType proc_start_type = 6;
+
+    /** The process name who requests the service launch */
+    optional string request_process_name = 7;
 }
 
 /**
@@ -10277,11 +10289,15 @@ message NfcCardemulationOccurred {
         HCE_PAYMENT = 1;
         HCE_OTHER = 2;
         OFFHOST = 3;
+        OFFHOST_PAYMENT = 4;
+        OFFHOST_OTHER = 5;
     }
     // Transaction belongs to HCE payment or HCE other category, or offhost.
     optional Category category = 1;
     // SeName from transaction: SIMx, eSEx, HCE, HCEF.
     optional string se_name = 2;
+
+    optional int32 uid = 3 [(is_uid) = true];
 }
 
 /**
@@ -10298,8 +10314,27 @@ message NfcTagOccurred {
         WIFI_CONNECT = 4;
         APP_LAUNCH = 5;
         OTHERS = 6;
+        FOREGROUND_DISPATCH = 7;
     }
     optional Type type = 1;
+
+    optional int32 uid = 2 [(is_uid) = true];
+    // Supported RF Technologies of the Tag
+    repeated android.nfc.RFTechnologyType rf_types = 3;
+    // Use for BT_PAIRING Type
+    optional android.bluetooth.MajorClassEnum bt_device_type = 4;
+    // Use for BT_PAIRING Type
+    // Should be empty for HEALTH and UNKNOWN MajorClassEnum
+    optional string bt_device_info = 5;
+}
+
+/**
+ * Logs NFC tag type when tag occurred
+ * Logged from:
+ *     packages/apps/Nfc/nci/jni/NfcTag.cpp
+ */
+message NfcTagTypeOccurred {
+    optional android.nfc.NfcTagType type = 1;
 }
 
 /**
@@ -10311,6 +10346,23 @@ message NfcHceTransactionOccurred {
     // The latency period(in microseconds) it took for the first HCE data
     // exchange.
     optional uint32 latency_micros = 1;
+}
+
+/**
+ * Logs when AID conflict occurred
+ * Logged from:
+ * packages/apps/Nfc/src/com/android/nfc/cardemulation/HostEmulationManager.java
+*/
+message NfcAIDConflictOccurred {
+    optional string conflicting_aid = 1;
+}
+
+/**
+ * Logs when reader app conflict occurred
+ * Logged from:
+ *     packages/apps/Nfc/src/com/android/nfc/NfcDispatcher.java
+*/
+message NfcReaderConflictOccurred {
 }
 
 /**
@@ -10386,6 +10438,8 @@ message PermissionGrantRequestResultReported {
         AUTO_ONE_TIME_PERMISSION_REVOKED = 15;
         // permission was automatically revoked for unused app
         AUTO_UNUSED_APP_PERMISSION_REVOKED = 16;
+        // the user selected media with the photo picker
+        PHOTOS_SELECTED = 17;
     }
     // The result of the permission grant
     optional Result result = 6;
@@ -12146,7 +12200,7 @@ message RuntimePermissionsUpgradeResult {
 }
 
 /**
-* Information about a buttons presented in GrantPermissionsActivty and choice made by user
+* Information about a buttons presented in GrantPermissionsActivity and choice made by user
 */
 message GrantPermissionsActivityButtonActions {
     // Permission granted as result of upgrade
@@ -12248,6 +12302,8 @@ message AppPermissionFragmentActionReported {
         GRANT_FINE_LOCATION = 7;
         // Switch button set to OFF for location accuracy
         REVOKE_FINE_LOCATION = 8;
+        // The user has selected photos/videos from the photo picker
+        PHOTOS_SELECTED = 9;
     }
 
     // Button pressed in the dialog
@@ -17756,15 +17812,25 @@ message VmExited {
     optional DeathReason death_reason = 3;
     // Elapsed time between start and termination of a VM
     optional int64 elapsed_time_millis = 4;
+
+    // Guest time for CPU usage
+    optional int64 guest_time_millis = 5;
+
+    // RSS for memory usage
+    optional int64 rss_vm_kb = 6;
+    optional int64 rss_crosvm_kb = 7;
 }
 
 /**
+ * (Deprecated)
  * Logs telemetry for Android Virtualization framework
  *
  * For every second while VM is running, an atom is pushed that records CPU time information of VM.
  * Logged from: packages/modules/Virtualization/
  */
 message VmCpuStatusReported {
+    option deprecated = true;
+
     optional int32 uid = 1 [(is_uid) = true];
     optional string vm_identifier = 2;
 
@@ -17775,12 +17841,15 @@ message VmCpuStatusReported {
 }
 
 /**
+ * (Deprecated)
  * Logs telemetry for Android Virtualization framework
  *
  * For every second while VM is running, an atom is pushed that records memory information of VM.
  * Logged from: packages/modules/Virtualization/
  */
 message VmMemStatusReported {
+    option deprecated = true;
+
     optional int32 uid = 1 [(is_uid) = true];
     optional string vm_identifier = 2;
 
@@ -21379,8 +21448,24 @@ message ApexInfoGathered {
     optional string package_name = 1;
     // the version code of the APEX
     optional int64 version_code = 2;
-    // the hex encoded SHA256 digest of the APEX file
-    optional string sha256_digest = 3;
+
+    // the hex encoded value of digest of the content of this APEX
+    // we are deprecating the use of this going forward
+    optional string content_digest = 3;
+
+    enum DigestAlgorithmType {
+        UNKNOWN = 0;
+        CHUNKED_SHA256 = 1;
+        CHUNKED_SHA512 = 2;
+        VERITY_CHUNKED_SHA256 = 3;
+        SHA256 = 4;
+    }
+
+    // the algorithm that the content digest is computed
+    optional DigestAlgorithmType algo_type = 4;
+
+    // the SHA256 digest(s) of the APEX's signer certificate(s)
+    repeated string signer_sha256_digest = 5;
 }
 
 /**
@@ -22079,6 +22164,7 @@ message AdServicesApiCalled {
         REGISTER_WEB_TRIGGER = 18;
         GET_MEASUREMENT_API_STATUS = 19;
         GET_TOPICS_PREVIEW_API = 20;
+        SELECT_ADS_FROM_OUTCOMES = 21;
     }
 
     optional AdServicesApiClassType api_class = 1 [deprecated = true];
@@ -23888,6 +23974,69 @@ message NetworkSelectionPerformance {
     optional int32 selection_issued_latency_milli = 5;
 }
 
+message NetworkSliceRequestCountSample {
+    // Bitfield representing the network's capability(e.g. NET_CAPABILITY_PRIORITIZE_LATENCY),
+    // defined in packages/modules/Connectivity/framework/src/android/net/NetworkCapabilities.java
+    optional int64 slice_id = 1;
+
+    // Bitfield representing the network's enterprise capability identifier
+    // (e.g. NET_ENTERPRISE_ID_1), defined in
+    // packages/modules/Connectivity/framework/src/android/net/NetworkCapabilities.java
+    optional int32 enterprise_id = 2;
+
+    // number of request for this slice
+    optional int32 request_count = 3;
+
+    // number of apps with outstanding request(s) for this slice
+    optional int32 distinct_app_count = 4;
+}
+
+message NetworkSliceSessionEnded {
+    // Bitfield representing the network's capability(e.g. NET_CAPABILITY_PRIORITIZE_LATENCY),
+    // defined in packages/modules/Connectivity/framework/src/android/net/NetworkCapabilities.java
+    optional int64 slice_id = 1;
+
+    // Bitfield representing the network's enterprise capability identifier
+    // (e.g. NET_ENTERPRISE_ID_1), defined in
+    // packages/modules/Connectivity/framework/src/android/net/NetworkCapabilities.java
+    optional int32 enterprise_id = 2;
+
+    // Number of bytes received at the device on this slice id
+    optional int64 rx_bytes = 3;
+
+    // Number of bytes transmitted by the device on this slice id
+    optional int64 tx_bytes = 4;
+
+    // Number of apps that have used this slice
+    optional int32 number_of_apps = 5;
+
+    // How long(in seconds) this slice has been connected
+    optional int32 slice_connection_duration_sec = 6;
+}
+
+message NetworkSliceDailyDataUsageReported {
+    // Bitfield representing the network's capability(e.g. NET_CAPABILITY_PRIORITIZE_LATENCY),
+    // defined in packages/modules/Connectivity/framework/src/android/net/NetworkCapabilities.java
+    optional int64 slice_id = 1;
+
+    // Bitfield representing the network's enterprise capability identifier
+    // (e.g. NET_ENTERPRISE_ID_1), defined in
+    // packages/modules/Connectivity/framework/src/android/net/NetworkCapabilities.java
+    optional int32 enterprise_id = 2;
+
+    // Number of bytes received at the device on this slice id
+    optional int64 rx_bytes = 3;
+
+    // Number of bytes transmitted by the device on this slice id
+    optional int64 tx_bytes = 4;
+
+    // Number of apps that have used this slice
+    optional int32 number_of_apps = 5;
+
+    // How long(in seconds) this slice has been connected
+    optional int32 slice_connection_duration_sec = 6;
+}
+
 /**
  * Logs the Brightness Configuration pushed by the long term model. The Brightness Configuration is
  * expressed as a curve where each point is a pair of ambient light (lux) and the corresponding
@@ -24186,6 +24335,9 @@ message WsWatchFaceEdited {
 
    // Session duration for watch face editing.
    optional int32 session_duration_millis = 2;
+
+   // Enum to depict the source of the request. Values (PHONE, WATCH)
+   optional android.app.wearservices.RequestSource request_source = 3;
 }
 
 /**
@@ -24217,4 +24369,7 @@ message WsWatchFaceSetActionReported {
 
   // Result for WF, whether it resulted in SAME/FAVORITE/FALLBACK
   optional android.app.wearservices.SetResultEnum wf_set_result = 2;
+
+  // Enum to depict the source of the request. Values (PHONE, WATCH)
+   optional android.app.wearservices.RequestSource request_source = 3;
 }
