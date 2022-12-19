@@ -834,13 +834,13 @@ message Atom {
             wear_media_output_switcher_connection_reported =
                 540 [(module) = "MediaOutputSwitcher"];
         WearMediaOutputSwitcherDeviceScanTriggered
-            wear_media_output_swicher_device_scan_triggered =
+            wear_media_output_switcher_device_scan_triggered =
                 541 [(module) = "MediaOutputSwitcher"];
-        WearMediaOutputSwitcherPairedDeviceScanLatency
-            wear_media_output_swicher_paired_device_scan_latency =
+        WearMediaOutputSwitcherFirstDeviceScanLatency
+            wear_media_output_switcher_first_device_scan_latency =
                 542 [(module) = "MediaOutputSwitcher"];
         WearMediaOutputSwitcherConnectDeviceLatency
-            wear_media_output_swicher_connect_device_latency =
+            wear_media_output_switcher_connect_device_latency =
                 543 [(module) = "MediaOutputSwitcher"];
         PackageManagerSnapshotReported
             package_manager_snapshot_reported = 544 [(module) = "framework"];
@@ -866,6 +866,9 @@ message Atom {
         NfcTagTypeOccurred nfc_tag_type_occurred = 560 [(module) = "nfc"];
         NfcAIDConflictOccurred nfc_aid_conflict_occurred = 561 [(module) = "nfc"];
         NfcReaderConflictOccurred nfc_reader_conflict_occurred = 562 [(module) = "nfc"];
+        WsTileListChanged ws_tile_list_changed = 563 [(module) = "wearservices"];
+        GetTypeAccessedWithoutPermission get_type_accessed_without_permission = 564[(module) = "framework"];
+        ArtDatumDeltaReported art_datum_delta_reported = 565 [(module) = "art"];
         // StatsdStats tracks platform atoms with ids upto 750.
         // Update StatsdStats::kMaxPushedAtomId when atom ids here approach that value.
     }
@@ -1072,6 +1075,7 @@ message Atom {
         GameModeConfiguration game_mode_configuration = 10166 [(module) = "framework"];
         GameModeListener game_mode_listener = 10167 [(module) = "framework"];
         NetworkSliceRequestCountSample network_slice_request_count = 10168 [(module) = "connectivity"];
+        WsTileSnapshot ws_tile_snapshot = 10169 [(module) = "wearservices"];
     }
 
     // DO NOT USE field numbers above 100,000 in AOSP.
@@ -12979,6 +12983,8 @@ message AppSearchInitializeStatsReported {
 
 /**
  * Logs detailed stats for querying in AppSearch
+ *
+ * Next tag: 30
  */
 message AppSearchQueryStatsReported {
     // The sampling interval for this specific type of stats
@@ -13065,6 +13071,22 @@ message AppSearchQueryStatsReported {
 
     // How many snippets are calculated.
     optional int32 native_num_results_with_snippets = 24;
+
+    // Time passed while waiting to acquire the lock during Java function calls.
+    optional int32 java_lock_acquisition_latency_millis = 25;
+
+    // Time spent on ACL checking. This is the time spent filtering namespaces
+    // based on package permissions and Android permission access.
+    optional int32 acl_check_latency_millis = 26;
+
+    // Time passed while waiting to acquire the lock during native function calls.
+    optional int32 native_lock_acquisition_latency_millis = 27;
+
+    // Time used to send data across the JNI boundary from java to native side.
+    optional int32 java_to_native_jni_latency_millis = 28;
+
+    // Time used to send data across the JNI boundary from native to java side.
+    optional int32 native_to_java_jni_latency_millis = 29;
 }
 
 /**
@@ -18726,6 +18748,45 @@ enum ArtDatumId {
     ART_DATUM_GC_FULL_HEAP_COLLECTION_DURATION_MS = 36;
 }
 
+// Indicates which kind of measurement ART is reporting as increments / deltas.
+// Next ID: 37
+enum ArtDatumDeltaId {
+    ART_DATUM_DELTA_INVALID = 0;
+
+    // These IDs are the equivalent of the ArtDatumId values,
+    // but for reporting increments / deltas.
+    ART_DATUM_DELTA_CLASS_VERIFICATION_COUNT = 16;
+    ART_DATUM_DELTA_CLASS_VERIFICATION_TIME_MICROS = 8;
+    ART_DATUM_DELTA_CLASS_LOADING_TIME_MICROS = 9;
+    ART_DATUM_DELTA_GC_FULL_HEAP_COLLECTION_COUNT = 5;
+    ART_DATUM_DELTA_GC_TOTAL_BYTES_ALLOCATED = 17;
+    ART_DATUM_DELTA_GC_TOTAL_COLLECTION_TIME_MS = 28;
+    ART_DATUM_DELTA_GC_YOUNG_GENERATION_COLLECTION_COUNT = 3;
+    ART_DATUM_DELTA_JIT_METHOD_COMPILE_COUNT = 21;
+    ART_DATUM_DELTA_JIT_METHOD_COMPILE_TIME_MICROS = 6;
+
+    // numerator from ART_DATUM_GC_WORLD_STOP_TIME_AVG_MICROS
+    ART_DATUM_DELTA_GC_WORLD_STOP_TIME_US = 29;
+    // denominator from ART_DATUM_GC_WORLD_STOP_TIME_AVG_MICROS
+    ART_DATUM_DELTA_GC_WORLD_STOP_COUNT = 30;
+    // numerator from ART_DATUM_GC_YOUNG_GENERATION_TRACING_THROUGHPUT_AVG_MB_PER_SEC
+    ART_DATUM_DELTA_GC_YOUNG_GENERATION_COLLECTION_SCANNED_BYTES = 31;
+    // numerator from ART_DATUM_GC_YOUNG_GENERATION_COLLECTION_THROUGHPUT_AVG_MB_PER_SEC
+    ART_DATUM_DELTA_GC_YOUNG_GENERATION_COLLECTION_FREED_BYTES = 32;
+    // denominator from ART_DATUM_GC_YOUNG_GENERATION_TRACING_THROUGHPUT_AVG_MB_PER_SEC
+    // and ART_DATUM_GC_YOUNG_GENERATION_COLLECTION_THROUGHPUT_AVG_MB_PER_SEC
+    ART_DATUM_DELTA_GC_YOUNG_GENERATION_COLLECTION_DURATION_MS = 33;
+    // numerator from ART_DATUM_GC_FULL_HEAP_TRACING_THROUGHPUT_AVG_MB_PER_SEC
+    ART_DATUM_DELTA_GC_FULL_HEAP_COLLECTION_SCANNED_BYTES = 34;
+    // numerator from ART_DATUM_GC_FULL_HEAP_COLLECTION_THROUGHPUT_AVG_MB_PER_SEC
+    ART_DATUM_DELTA_GC_FULL_HEAP_COLLECTION_FREED_BYTES = 35;
+    // denominator from ART_DATUM_GC_FULL_HEAP_TRACING_THROUGHPUT_AVG_MB_PER_SEC
+    // and ART_DATUM_GC_FULL_HEAP_COLLECTION_THROUGHPUT_AVG_MB_PER_SEC
+    ART_DATUM_DELTA_GC_FULL_HEAP_COLLECTION_DURATION_MS = 36;
+
+    reserved 1, 2, 4, 7, 10, 11, 12, 13, 14, 15, 18, 19, 20, 22, 23, 24, 25, 26, 27;
+}
+
 // Indicates what class of thread the reported values apply to.
 enum ArtThreadType {
     ART_THREAD_UNKNOWN = 0;
@@ -18783,6 +18844,43 @@ message ArtDatumReported {
 
     // Which counter this is that is being reported.
     optional ArtDatumId kind = 7;
+
+    // The value of the counter.
+    optional int64 value = 8;
+
+    // The type of dex metadata
+    optional ArtDexMetadataType dex_metadata_type = 9;
+
+    // The type of the APK file.
+    optional ArtApkType apk_type = 10;
+
+    // The ISA of the device.
+    optional ArtIsa isa = 11;
+}
+
+// ArtDatumDeltaReported is the same as ArtDatumReported, except for the kind field
+// (ArtDatumDeltaId here, ArtDatumId for ArtDatumReported)
+message ArtDatumDeltaReported {
+    // The session ID is used to correlate this report with others from the same ART instance.
+    optional int64 session_id = 1;
+
+    // The UID of the app that ART is running on behalf of.
+    optional int32 uid = 2 [(is_uid) = true];
+
+    // What compiler filter the APK or DEX file was compiled with.
+    optional ArtCompileFilter compile_filter = 3;
+
+    // Why the package was compiled the way it was.
+    optional ArtCompilationReason compilation_reason = 4;
+
+    // The number of milliseconds since the ART runtime instance was started.
+    optional int64 timestamp_millis = 5;
+
+    // What kind of thread (UI or background) this metric corresponds to.
+    optional ArtThreadType thread_type = 6;
+
+    // Which counter this is that is being reported.
+    optional ArtDatumDeltaId kind = 7;
 
     // The value of the counter.
     optional int64 value = 8;
@@ -22877,10 +22975,46 @@ message BackgroundDexoptJobEnded {
         // `BackgroundDexOptService.Status.STATUS_DEX_OPT_FAILED`.)
         STATUS_JOB_FINISHED = 1;
 
+        // The job is aborted by the job scheduler. The reason is logged in
+        // `cancellation_reason`.
         STATUS_ABORT_BY_CANCELLATION = 2;
+
+        // The job is aborted by itself because there is no space left. Note
+        // that this does NOT include cases where the job is aborted by the job
+        // scheduler due to no space left, which are logged as
+        // `STATUS_ABORT_BY_CANCELLATION` with `cancellation_reason` being
+        // `STOP_REASON_CONSTRAINT_STORAGE_NOT_LOW`.
         STATUS_ABORT_NO_SPACE_LEFT = 3;
+
+        // The job is aborted by itself because of thermal issues. Note that
+        // this does NOT include cases where the job is aborted by the job
+        // scheduler due to thermal issues, which are logged as
+        // `STATUS_ABORT_BY_CANCELLATION` with `cancellation_reason` being
+        // `STOP_REASON_DEVICE_STATE`.
+        //
+        // Only applies to the legacy dexopt job.
         STATUS_ABORT_THERMAL = 4;
+
+        // The job is aborted by itself because of unsatisfied battery level.
+        // Note that this does NOT include cases where the job is aborted by the
+        // job scheduler due to unsatisfied battery level, which are logged as
+        // `STATUS_ABORT_BY_CANCELLATION` with `cancellation_reason` being
+        // `STOP_REASON_CONSTRAINT_BATTERY_NOT_LOW`.
+        //
+        // Only applies to the legacy dexopt job.
         STATUS_ABORT_BATTERY = 5;
+
+        // The job is aborted by the API
+        // `ArtManagerLocal.cancelBackgroundDexoptJob`.
+        //
+        // Only applies to the background dexopt job in ART Service.
+        STATUS_ABORT_BY_API = 6;
+
+        // The job encountered a fatal error, such as a runtime exception. Note
+        // that this does NOT include cases where the job finishes normally with
+        // some dexopt failures on some apps, which are expected and logged as
+        // `STATUS_JOB_FINISHED`.
+        STATUS_FATAL_ERROR = 7;
     }
 
     optional Status status = 1;
@@ -23573,24 +23707,26 @@ message OutgoingShortCodeSms {
  *
  * Logged from:
  *   frameworks/base/packages/SettingsLib/src/com/android/settingslib/bluetooth/
- *   CachedBluetoothDevice.java
+ *   LocalBluetoothProfileManager.java
  */
 message HearingAidInfoReported {
     // The device mode of the bonded hearing aid
-    // Mode definition for hearing aids. See {@link BluetoothHearingAid}.
+    // Mode definition for hearing aids. See {@link HearingAidInfo}
     enum DeviceMode {
         MODE_UNKNOWN = -1;
         MONAURAL = 0;
         BINAURAL = 1;
+        BANDED = 2;
     }
     optional DeviceMode device_mode = 1;
 
     // The device side of the bonded hearing aid
-    // Side definition for hearing aids. See {@link BluetoothHearingAid}.
+    // Side definition for hearing aids. See {@link HearingAidInfo}.
     enum DeviceSide {
         SIDE_UNKNOWN = -1;
         LEFT = 0;
         RIGHT = 1;
+        LEFT_AND_RIGHT = 2;
     }
     optional DeviceSide device_side = 2;
 
@@ -24097,8 +24233,8 @@ message WearMediaOutputSwitcherConnectionReported {
     optional com.google.android.wearable.media.MediumType source = 1;
     optional com.google.android.wearable.media.MediumType target  = 2;
 
-    // Reason for switching the media to different device
-    optional com.google.android.wearable.media.ConnectionResultReason reason = 3;
+    // Reason for the connection reported
+    optional com.google.android.wearable.media.ConnectionReportReason reason = 3;
 
     // Current status of switching the media.
     optional com.google.android.wearable.media.ConnectionState state =4;
@@ -24135,25 +24271,28 @@ message WearMediaOutputSwitcherDeviceScanTriggered {
 }
 
 /**
- * Logs the latency for scanning already paired devices.
+ * Logs the latency for scanning the first device.
  *
  * Logged from:
  * package: vendor/google_clockwork/packages/Media
  */
-message WearMediaOutputSwitcherPairedDeviceScanLatency {
-    // The latency of scanning already paired devices in milli-second
-    optional int64 latency_in_millis = 1;
+message WearMediaOutputSwitcherFirstDeviceScanLatency {
+    // The latency of scanning the first device
+    optional int32 latency_in_millis = 1;
 }
 
 /**
- * Logs the latency for scanning all available devices.
+ * Logs the latency for scanning all devices.
  *
  * Logged from:
  * package: vendor/google_clockwork/packages/Media
  */
 message WearMediaOutputSwitcherAllDevicesScanLatency {
     // The latency of scanning all available devices in milli-second
-    optional int64 latency_in_millis = 1;
+    optional int32 latency_in_millis = 1;
+
+    // Type of target device.
+    optional com.google.android.wearable.media.MediaDeviceType target_device_type = 2;
 }
 
 /**
@@ -24164,7 +24303,7 @@ message WearMediaOutputSwitcherAllDevicesScanLatency {
  */
 message WearMediaOutputSwitcherConnectDeviceLatency {
     // The latency of connecting to an already paired device in milli-second.
-    optional int64 latency_in_millis = 1;
+    optional int32 latency_in_millis = 1;
 
     // Type of target medium.
     optional com.google.android.wearable.media.MediumType target_device_medium_type = 2;
@@ -24372,4 +24511,63 @@ message WsWatchFaceSetActionReported {
 
   // Enum to depict the source of the request. Values (PHONE, WATCH)
    optional android.app.wearservices.RequestSource request_source = 3;
+}
+
+/**
+* Logged when tile list is modified (go/wear-dd-wearservices-telemetry)
+*/
+message WsTileListChanged {
+    enum Event {
+        UNKNOWN = 0;
+        TILE_ADDED = 1;
+        TILE_REMOVED = 2;
+        TILE_MOVED = 3;
+    }
+    // Component package for the tile that is being changed.
+    optional int32 component_package_uid = 1 [(is_uid) = true];
+
+    // Class name for the tile.
+    optional string component_class_name = 2;
+
+    // The event in result of which tile list has changed.
+    optional Event event = 3;
+}
+
+/**
+* A snapshot of all visible tiles in the order they appear on the watch.
+* (go/wear-dd-wearservices-telemetry)
+*/
+message WsTileSnapshot {
+    // Component package for the tiles.
+    repeated int32 component_package_uid = 1 [(is_uid) = true];
+
+    // Class name for the tiles.
+    repeated string component_class_name = 2;
+}
+/*
+* Logs calls to getType of a contentProvider, where the caller has potentially no access to
+* the provider.
+*
+* Logs from :
+* frameworks/base/services/core/java/com/android/server/am/ContentProviderHelper.java
+* frameworks/base/core/java/android/content/ContentProvider.java
+*/
+message GetTypeAccessedWithoutPermission{
+  // Indicator of the type of permission failure
+  enum FailureType{
+      UNSPECIFIED = 0;
+      AM_FRAMEWORK_PERMISSION = 1;
+      AM_CHECK_URI_PERMISSION = 2;
+      AM_ERROR = 3;
+      PROVIDER_FRAMEWORK_PERMISSION = 4;
+      PROVIDER_CHECK_URI_PERMISSION = 5;
+      PROVIDER_ERROR = 6;
+  }
+  optional FailureType location = 1;
+  // Name of the caller package
+  optional int32 calling_uid = 2 [(is_uid) = true];
+  // Name of the provider (authority) which is being accessed
+  optional string provider = 3;
+  // Type of the uri returned
+  optional string type = 4;
 }
