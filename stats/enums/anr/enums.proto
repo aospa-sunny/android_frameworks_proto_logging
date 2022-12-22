@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017 The Android Open Source Project
+ * Copyright (C) 2022 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,17 +14,22 @@
  * limitations under the License.
  */
 
-syntax = "proto2";
-package android.adservices.service;
+ syntax = "proto2";
+ package android.anr;
 
-option java_outer_classname = "FledgeProtoEnums";
-option java_multiple_files = true;
+ option java_outer_classname = "AnrProtoEnums";
+ option java_multiple_files = true;
+
 
 /**
- * Script language type.
- */
-enum ScriptType {
-  UNSET = 0;
-  JAVASCRIPT = 1;
-  WASM = 2;
+* The type of the triggered ANR.
+*/
+enum AnrType {
+    UNKNOWN_ANR_TYPE = 0;
+    BROADCAST_OF_INTENT = 1;
+    EXECUTING_SERVICE = 2;
+    START_FOREGROUND_SERVICE = 3;
+    INPUT_DISPATCHING_TIMEOUT_NO_FOCUSED_WINDOW = 4;
+    INPUT_DISPATCHING_TIMEOUT = 5;
+    CONTENT_PROVIDER_NOT_RESPONDING = 6;
 }

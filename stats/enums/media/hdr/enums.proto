@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017 The Android Open Source Project
+ * Copyright (C) 2022 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,16 +15,16 @@
  */
 
 syntax = "proto2";
-package android.adservices.service;
 
-option java_outer_classname = "FledgeProtoEnums";
-option java_multiple_files = true;
+package android.media.hdr;
 
-/**
- * Script language type.
- */
-enum ScriptType {
-  UNSET = 0;
-  JAVASCRIPT = 1;
-  WASM = 2;
+// The HDR format
+//
+// From frameworks/av/media/libmedia/include/media/MediaProfiles.h
+enum HdrFormat {
+  HDR_FORMAT_NONE = 0;
+  HDR_FORMAT_HLG = 1;
+  HDR_FORMAT_HDR10 = 2;
+  HDR_FORMAT_HDR10PLUS = 3;
+  HDR_FORMAT_DOLBY_VISION = 4;
 }
