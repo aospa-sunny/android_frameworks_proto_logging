@@ -81,7 +81,11 @@ enum_protos = [
 atom_protos = [
     "atoms.proto",
     "attribution_node.proto",
+    "atoms/adpf/*.proto",
+    "atoms/agif/*.proto",
     "atoms/gps/*.proto",
+    "atoms/hardware/biometrics/*.proto",
+    "atoms/hotword/*.proto",
     "atoms/placeholder/*.proto",
 ]
 
