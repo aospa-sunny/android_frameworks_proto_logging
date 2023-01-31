@@ -64,3 +64,34 @@ enum SessionTypeEnum {
     SESSION_TYPE_KEYGUARD_ENTRY = 1;
     SESSION_TYPE_BIOMETRIC_PROMPT = 2;
 }
+
+enum TouchTypeEnum {
+    // No finger entered or left the sensor area.
+    TOUCH_TYPE_UNCHANGED = 0;
+    // A finger entered the sensor area.
+    TOUCH_TYPE_DOWN = 1;
+    // A finger left the sensor area.
+    TOUCH_TYPE_UP = 2;
+    // The touch reporting has stopped. If there was a finger on the sensor, it may or may not
+    // still be on the sensor.
+    TOUCH_TYPE_CANCEL = 3;
+}
+
+enum OrientationEnum {
+    ORIENTATION_UNKNOWN = 0;
+    ORIENTATION_0 = 1;
+    ORIENTATION_90 = 2;
+    ORIENTATION_180 = 3;
+    ORIENTATION_270 = 4;
+}
+
+enum FoldStateEnum {
+    FOLD_UNKNOWN = 0;
+    FOLD_OPEN = 1;
+    FOLD_CLOSED = 2;
+    FOLD_HALF_OPEN = 3;
+}
+
+enum WakeReasonEnum {
+    WAKE_REASON_UNKNOWN = 0;
+}

@@ -49,8 +49,7 @@ void build_non_chained_decl_map(const Atoms& atoms,
 }
 
 const map<AnnotationId, string>& get_annotation_id_constants() {
-    static const map<AnnotationId, string>* ANNOTATION_ID_CONSTANTS =
-        new map<AnnotationId, string>{
+    static const map<AnnotationId, string>* ANNOTATION_ID_CONSTANTS = new map<AnnotationId, string>{
             {ANNOTATION_ID_IS_UID, "ANNOTATION_ID_IS_UID"},
             {ANNOTATION_ID_TRUNCATE_TIMESTAMP, "ANNOTATION_ID_TRUNCATE_TIMESTAMP"},
             {ANNOTATION_ID_PRIMARY_FIELD, "ANNOTATION_ID_PRIMARY_FIELD"},
@@ -59,7 +58,7 @@ const map<AnnotationId, string>& get_annotation_id_constants() {
             {ANNOTATION_ID_DEFAULT_STATE, "ANNOTATION_ID_DEFAULT_STATE"},
             {ANNOTATION_ID_TRIGGER_STATE_RESET, "ANNOTATION_ID_TRIGGER_STATE_RESET"},
             {ANNOTATION_ID_STATE_NESTED, "ANNOTATION_ID_STATE_NESTED"},
-        };
+    };
 
     return *ANNOTATION_ID_CONSTANTS;
 }
@@ -248,6 +247,31 @@ void write_native_atom_constants(FILE* out, const Atoms& atoms, const AtomDecl& 
     fprintf(out, "\n");
     fprintf(out, "};\n");
     fprintf(out, "\n");
+}
+
+void write_native_atom_enums(FILE* out, const Atoms& atoms) {
+    // Print constants for the enum values.
+    fprintf(out, "//\n");
+    fprintf(out, "// Constants for enum values\n");
+    fprintf(out, "//\n\n");
+    for (AtomDeclSet::const_iterator atomIt = atoms.decls.begin(); atomIt != atoms.decls.end();
+         atomIt++) {
+        for (vector<AtomField>::const_iterator field = (*atomIt)->fields.begin();
+             field != (*atomIt)->fields.end(); field++) {
+            if (field->javaType == JAVA_TYPE_ENUM) {
+                fprintf(out, "// Values for %s.%s\n", (*atomIt)->message.c_str(),
+                        field->name.c_str());
+                for (map<int, string>::const_iterator value = field->enumValues.begin();
+                     value != field->enumValues.end(); value++) {
+                    fprintf(out, "const int32_t %s__%s__%s = %d;\n",
+                            make_constant_name((*atomIt)->message).c_str(),
+                            make_constant_name(field->name).c_str(),
+                            make_constant_name(value->second).c_str(), value->first);
+                }
+                fprintf(out, "\n");
+            }
+        }
+    }
 }
 
 // Java
