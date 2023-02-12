@@ -63,7 +63,7 @@ enum_protos = [
     "enums/telecomm/*.proto",
     "enums/telephony/*.proto",
     "enums/uwb/*.proto",
-    "enums/view/*.proto",
+    "enums/view/**/*.proto",
     "enums/wifi/*.proto",
     ":data_stall_event_proto",
     ":device_policy_proto",
@@ -83,10 +83,16 @@ atom_protos = [
     "attribution_node.proto",
     "atoms/adpf/*.proto",
     "atoms/agif/*.proto",
+    "atoms/art/*.proto",
     "atoms/gps/*.proto",
+    "atoms/grammaticalinflection/*.proto",
     "atoms/hardware/biometrics/*.proto",
     "atoms/hotword/*.proto",
+    "atoms/locale/*.proto",
+    "atoms/location/*.proto",
+    "atoms/view/inputmethod/*.proto",
     "atoms/placeholder/*.proto",
+    "atoms/usb/*.proto"
 ]
 
 cc_library_host_shared {
