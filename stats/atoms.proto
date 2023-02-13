@@ -28,12 +28,15 @@ import "frameworks/proto_logging/stats/atoms/agif/agif_atoms.proto";
 import "frameworks/proto_logging/stats/atoms/art/art_atoms.proto";
 import "frameworks/proto_logging/stats/atoms/art/background_dexopt_atoms.proto";
 import "frameworks/proto_logging/stats/atoms/art/odrefresh_atoms.proto";
+import "frameworks/proto_logging/stats/atoms/credentials/credentials_atoms.proto";
 import "frameworks/proto_logging/stats/atoms/gps/gps_atoms.proto";
 import "frameworks/proto_logging/stats/atoms/grammaticalinflection/grammatical_inflection.proto";
 import "frameworks/proto_logging/stats/atoms/hardware/biometrics/biometrics_atoms.proto";
 import "frameworks/proto_logging/stats/atoms/hotword/hotword_atoms.proto";
+import "frameworks/proto_logging/stats/atoms/kernel/kernel_atoms.proto";
 import "frameworks/proto_logging/stats/atoms/locale/locale_atoms.proto";
 import "frameworks/proto_logging/stats/atoms/location/location_atoms.proto";
+import "frameworks/proto_logging/stats/atoms/providers/mediaprovider/media_provider_atoms.proto";
 import "frameworks/proto_logging/stats/atoms/usb/usb_atoms.proto";
 import "frameworks/proto_logging/stats/atoms/view/inputmethod/inputmethod_atoms.proto";
 import "frameworks/proto_logging/stats/atom_field_options.proto";
@@ -109,6 +112,7 @@ import "frameworks/proto_logging/stats/enums/wifi/enums.proto";
 import "frameworks/proto_logging/stats/enums/stats/textclassifier/textclassifier_enums.proto";
 import "frameworks/proto_logging/stats/enums/stats/otaupdate/updateengine_enums.proto";
 import "frameworks/proto_logging/stats/message/mediametrics_message.proto";
+import "frameworks/proto_logging/stats/atoms/devicelogs/device_logs_atoms.proto";
 
 /**
  * The primary atom class. This message defines all of the available
@@ -906,6 +910,13 @@ message Atom {
         usb.UsbComplianceWarningsReported usb_compliance_warnings_reported = 582 [(module) = "framework"];
         locale.AppSupportedLocalesChanged app_supported_locales_changed = 583 [(module) = "framework"];
         grammaticalinflection.ApplicationGrammaticalInflectionChanged grammatical_inflection_changed = 584 [(module) = "framework"];
+        credentials.CredentialManagerApiCalled credential_manager_api_called = 585 [(module) = "framework"];
+        providers.mediaprovider.MediaProviderVolumeRecoveryReported
+            media_provider_volume_recovery_reported = 586 [(module) = "mediaprovider"];
+        hardware.biometrics.BiometricPropertiesCollected
+            biometric_properties_collected = 587 [(module) = "framework"];
+        kernel.KernelWakeupAttributed kernel_wakeup_attributed = 588 [(module) = "framework"];
+
         // StatsdStats tracks platform atoms with ids upto 750.
         // Update StatsdStats::kMaxPushedAtomId when atom ids here approach that value.
     }
@@ -1122,6 +1133,8 @@ message Atom {
         ProcessAssociation process_association = 10172 [(module) = "framework"];
         adpf.ADPFSystemComponentInfo adpf_system_component_info = 10173 [(module) = "framework"];
         NotificationMemoryUse notification_memory_use = 10174 [(module) = "sysui"];
+        devicelogs.DeviceLogAccessEventReported device_log_access_event_reported = 10175 [(module) = "sysui"];
+        WsFavouriteWatchFaceListSnapshot ws_favourite_watch_face_list_snapshot = 10176 [(module) = "wearservices"];
     }
 
     // Pulled atom extensions.
@@ -15505,7 +15518,8 @@ message SupportedRadioAccessFamily {
  */
 message DeviceTelephonyProperties {
     // True if the device adopts the data stack came out in T
-    optional bool using_t_data_stack = 1;
+    // Deprecated since U, where legacy stack has been removed
+    optional bool using_t_data_stack = 1 [deprecated = true];
     // True if auto data switch is enabled on the device
     optional bool auto_data_switch_enabled = 2;
     // Number of time the user toggled the data switch feature since the last collection
@@ -16534,6 +16548,8 @@ message MultiUserInfo {
     optional int32 max_supported_users = 1;
     // Whether multi user setting is on.
     optional bool multi_user_setting_on = 2;
+    // Whether device supports multiuser and owner have no restriction in adding users.
+    optional bool supports_adding_full_users = 3;
 }
 
 /**
@@ -19916,6 +19932,8 @@ message AlarmScheduled {
         ALLOW_LIST = 2;
         CHANGE_DISABLED = 3;
         POLICY_PERMISSION = 4;
+        LISTENER = 5;
+        PRIORITIZED = 6;
     }
     optional ReasonCode exact_alarm_allowed_reason = 7;
     optional bool is_rtc = 8;
@@ -23180,16 +23198,19 @@ message PrivacySignalsJobFailure {
 // Logs when an API call from app to sandbox process is made
 // Next ID: 6
 message SandboxApiCalled {
-    // Next ID: 10
+    // Next ID: 11
     enum Method {
         METHOD_UNSPECIFIED = 0;
         LOAD_SDK = 1;
         REQUEST_SURFACE_PACKAGE = 3;
+        // Api used by Apps via SdkSandboxManager
         GET_SANDBOXED_SDKS = 5;
         SYNC_DATA_FROM_CLIENT = 6;
         UNLOAD_SDK = 7;
         ADD_SDK_SANDBOX_LIFECYCLE_CALLBACK = 8;
         REMOVE_SDK_SANDBOX_LIFECYCLE_CALLBACK = 9;
+        // Api used by SDKs in the sandbox via SdkSandboxController
+        GET_SANDBOXED_SDKS_VIA_CONTROLLER = 10;
 
         LOAD_SANDBOX_AND_SDK = 2 [deprecated = true];
         SEND_DATA = 4 [deprecated = true];
@@ -24239,6 +24260,9 @@ message WsWatchFaceEdited {
 
    // Enum to depict the source of the request. Values (PHONE, WATCH)
    optional android.app.wearservices.RequestSource request_source = 3;
+
+   // Component package for watch face.
+   optional int32 component_package_uid = 4 [(is_uid) = true];
 }
 
 /**
@@ -24343,23 +24367,30 @@ message GetTypeAccessedWithoutPermission{
   optional string type = 4;
 }
 
-/** Logged when a complication is changed on a watch face. */
+/** Logged when a complication is changed on a watch face. Both
+  data for complication that is being placed in the complication
+  slot (we call is new here) and for complication that is being
+  replaced (we call is old) is reported.
+*/
 message WsWatchFaceComplicationSetChanged {
-  enum Event {
-    EVENT_UNKNOWN = 0;
-    COMPLICATION_ADDED = 1;
-    COMPLICATION_REMOVED = 2;
-  }
-  // Complication component package uid.
-  optional int32 complication_component_package_uid = 1 [(is_uid) = true];
-
-  // Complication component class name.
-  optional string complication_component_class_name = 2;
-
   // Watch face package uid
-  optional int32 watch_face_package_uid = 3 [(is_uid) = true];
+  optional int32 watch_face_package_uid = 1 [(is_uid) = true];
 
-  optional Event event = 4;
+  // Complication component package uid for complication that is being replaced.
+  // Equals to -1 if new complication is placed on previously empty slot.
+  optional int32 old_complication_component_package_uid = 2 [(is_uid) = true];
+
+  // Complication component class name for complication that is being replaced.
+  // Equals to empty string if new complication is placed on previously empty slot.
+  optional string old_complication_component_class_name = 3;
+
+  // Complication component package uid for new complication.
+  // Equals to -1 if complication is removed from complication slot.
+  optional int32 new_complication_component_package_uid = 4 [(is_uid) = true];
+
+  // Complication component class name for new complication.
+  // Equals to empty string if complication is removed from complication slot.
+  optional string new_complication_component_class_name = 5;
 
   enum RequestSource {
     SOURCE_UNKNOWN = 0;
@@ -24369,7 +24400,7 @@ message WsWatchFaceComplicationSetChanged {
 
   // Where a complication has been changed from. When changed on the companion equals
   // to SOURCE_PHONE, otherwise if it's changed from the watch SOURCE_WATCH.
-  optional RequestSource request_source = 5;
+  optional RequestSource request_source = 6;
 }
 
 /** Snapshot of all active complications on the current watch face.
@@ -24496,4 +24527,11 @@ message UnsafeIntentEventReported {
     optional string data_scheme = 8;
     // Is the unsafe intent event blocked by the system.
     optional bool is_blocked = 9;
+}
+
+/**
+ * Snapshot of all favorite watch faces from the watch.
+ */
+message WsFavouriteWatchFaceListSnapshot {
+  repeated string watch_face_package_name = 1;
 }
