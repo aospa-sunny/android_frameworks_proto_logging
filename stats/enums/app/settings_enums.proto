@@ -1087,6 +1087,11 @@ enum Action {
     // CATEGORY: SETTINGS
     // OS: T
     ACTION_DOCK_DEFENDER_TIP = 1805;
+
+    // ACTION: Settings > User > Add user
+    // CATEGORY: SETTINGS
+    // OS: S
+    ACTION_USER_ADD = 1806;
 }
 
 /**
@@ -3642,6 +3647,55 @@ enum PageId {
     // CATEGORY: SETTINGS
     // OS: U
     CLONED_APPS = 1989;
+
+    // OPEN: Settings > Apps > Special app access > Picture-in-picture > on of any app
+    // CATEGORY: SETTINGS
+    // OS: U
+    SETTINGS_MANAGE_PICTURE_IN_PICTURE_DETAIL = 1990;
+
+    // OPEN: Settings > Storage (When work profile exists)
+    // CATEGORY: SETTINGS
+    // OS: U
+    SETTINGS_STORAGE_PROFILE_SELECTOR = 1991;
+
+    // OPEN: Settings > Location > Location Services > Bluetooth scanning
+    // CATEGORY: SETTINGS
+    // OS: U
+    LOCATION_SERVICES_BLUETOOTH_SCANNING = 1992;
+
+    // OPEN: Settings > Location > Location Services > Wi-Fi scanning
+    // CATEGORY: SETTINGS
+    // OS: U
+    LOCATION_SERVICES_WIFI_SCANNING = 1993;
+
+    // OPEN: Settings > Location > Location Services > Work
+    // CATEGORY: SETTINGS
+    // OS: U
+    LOCATION_SERVICES_FOR_WORK = 1994;
+
+    // OPEN: Settings > Location
+    // CATEGORY: SETTINGS
+    // OS: U
+    LOCATION_PERSONAL = 1995;
+
+    // OPEN: Settings > Location > See All
+    // CATEGORY: SETTINGS
+    // OS: U
+    LOCATION_RECENT_ACCESS_ALL = 1996;
+
+    // OPEN: Settings > Network & internet > Calls & SMS.
+    NETWORK_PROVIDER_CALLS_SMS = 1997;
+
+    // OPEN: Settings > System > Reset options > Reset Bluetooth & Wi-Fi >
+    //       (confirmation dialog) > Reset
+    // CATEGORY: SETTINGS
+    // OS: U
+    RESET_BLUETOOTH_WIFI_CONFIRM = 1998;
+
+    // OPEN: Settings > Privacy & Security > Privacy Controls
+    // CATEGORY: SETTINGS
+    // OS: U
+    PRIVACY_CONTROLS = 1999;
 }
 
 // Battery Saver schedule types.
