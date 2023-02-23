@@ -1134,6 +1134,31 @@ enum Action {
     // CATEGORY: SETTINGS
     // OS: U
     ACTION_BATTERY_USAGE_FOREGROUND_USAGE_TIME = 1817;
+
+    // Action: Settings > System > Multiple users > Add user > OK > Give this user admin privileges
+    // CATEGORY: SETTINGS
+    // OS: U
+    ACTION_GRANT_ADMIN_FROM_SETTINGS_CREATION_DIALOG = 1818;
+
+    // Action: Settings > System > Multiple users > Add user > OK > Don't give user admin privileges
+    // CATEGORY: SETTINGS
+    // OS: U
+    ACTION_NOT_GRANT_ADMIN_FROM_SETTINGS_CREATION_DIALOG = 1819;
+
+    // Action: Settings > System > Multiple users > User > Give this user admin privileges > Toggle on
+    // CATEGORY: SETTINGS
+    // OS: U
+    ACTION_GRANT_ADMIN_FROM_SETTINGS = 1820;
+
+    // Action: Settings > System > Multiple users > User > Give this user admin privileges > Toggle off
+    // CATEGORY: SETTINGS
+    // OS: U
+    ACTION_REVOKE_ADMIN_FROM_SETTINGS = 1821;
+
+    // Custom tag to log selected item change of the spinner in battery usage page
+    // CATEGORY: SETTINGS
+    // OS: U
+    ACTION_BATTERY_USAGE_SPINNER = 1822;
 }
 
 /**
@@ -3539,6 +3564,11 @@ enum PageId {
     // OS: T
     NFC_DEFAULT_PAYMENT = 1936;
 
+    // OPEN: Active Unlock Enroll (if there is no face or fingerprint enrolled)
+    // CATEGORY: SETTINGS
+    // OS: T
+    ACTIVE_UNLOCK_REQUIRE_BIOMETRIC_SETUP = 1940;
+
     // OPEN: Settings > System > Languages
     // CATEGORY: SETTINGS
     // OS: U
@@ -3827,6 +3857,11 @@ enum PageId {
     // OPEN: Settings > Developer Options > Snoop Logger Filters
     // CATEGORY: SETTINGS
     SETTINGS_SNOOP_LOGGER_DASHBOARD = 2014;
+
+    // OPEN: Settings > System > Developer options > Memory Tagging Extension
+    // CATEGORY: SETTINGS
+    // OS: U
+    SETTINGS_DEVELOPMENT_MEMTAG_CATEGORY = 2015;
 }
 
 // Battery Saver schedule types.
