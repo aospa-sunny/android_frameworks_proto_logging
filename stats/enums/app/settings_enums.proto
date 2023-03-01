@@ -313,21 +313,6 @@ enum Action {
     // VALUE: The package name of the app
     ACTION_SETTINGS_CLEAR_INSTANT_APP = 923;
 
-    // OPEN: Assist Gesture training intro in Settings
-    // CATEGORY: SETTINGS
-    // OS: O DR
-    SETTINGS_ASSIST_GESTURE_TRAINING_INTRO = 991;
-
-    // OPEN: Assist Gesture training enrolling in Settings
-    // CATEGORY: SETTINGS
-    // OS: O DR
-    SETTINGS_ASSIST_GESTURE_TRAINING_ENROLLING = 992;
-
-    // OPEN: Assist Gesture training finished in Settings
-    // CATEGORY: SETTINGS
-    // OS: O DR
-    SETTINGS_ASSIST_GESTURE_TRAINING_FINISHED = 993;
-
     // ACTION: Update default app from Settings
     ACTION_SETTINGS_UPDATE_DEFAULT_APP = 1000;
 
@@ -1088,10 +1073,67 @@ enum Action {
     // OS: T
     ACTION_DOCK_DEFENDER_TIP = 1805;
 
-    // ACTION: Settings > User > Add user
+    // ACTION: Settings > System > Multi User > Add user
     // CATEGORY: SETTINGS
-    // OS: S
+    // OS: U
     ACTION_USER_ADD = 1806;
+
+    // ACTION: Settings > Apps > Cloned Apps > Click on add icon to create clone
+    // app.
+    // CATEGORY: SETTINGS
+    // OS: U
+    ACTION_CREATE_CLONE_APP = 1807;
+
+    // ACTION: Settings > Apps > Cloned Apps > Click on trash icon to delete
+    // clone app.
+    // CATEGORY: SETTINGS
+    // OS: U
+    ACTION_DELETE_CLONE_APP = 1808;
+
+    // ACTION: Settings > System > Multi User > User > Remove user
+    // CATEGORY: SETTINGS
+    // OS: U
+    ACTION_REMOVE_USER = 1809;
+
+    // ACTION: Settings > System > Multi User > Guest User > Remove user
+    // CATEGORY: SETTINGS
+    // OS: U
+    ACTION_REMOVE_GUEST_USER = 1810;
+
+    // ACTION: Settings > System > Multi User > Restricted User > Remove user
+    // CATEGORY: SETTINGS
+    // OS: U
+    ACTION_REMOVE_RESTRICTED_USER = 1811;
+
+    // ACTION: Settings > System > Multi User > Restricted User > Remove user
+    // CATEGORY: SETTINGS
+    // OS: U
+    ACTION_SWITCH_TO_RESTRICTED_USER = 1812;
+
+    // ACTION: Settings > System > Multi User > Restricted User > Remove user
+    // CATEGORY: SETTINGS
+    // OS: U
+    ACTION_SWITCH_TO_USER = 1813;
+
+    // ACTION: Settings > System > Multi User > User > enable call
+    // CATEGORY: SETTINGS
+    // OS: U
+    ACTION_ENABLE_USER_CALL = 1814;
+
+    // ACTION: Settings > System > Multi User > User > disable call
+    // CATEGORY: SETTINGS
+    // OS: U
+    ACTION_DISABLE_USER_CALL = 1815;
+
+    // Custom tag to log the total screen-on time when battery usage is opened.
+    // CATEGORY: SETTINGS
+    // OS: U
+    ACTION_BATTERY_USAGE_SCREEN_ON_TIME = 1816;
+
+    // Custom tag to log the total foreground time when battery usage is opened.
+    // CATEGORY: SETTINGS
+    // OS: U
+    ACTION_BATTERY_USAGE_FOREGROUND_USAGE_TIME = 1817;
 }
 
 /**
@@ -2218,6 +2260,21 @@ enum PageId {
     // CATEGORY: SETTINGS
     // OS: O DR
     SETTINGS_CHOOSE_LOCK_DIALOG = 990;
+
+    // OPEN: Assist Gesture training intro in Settings
+    // CATEGORY: SETTINGS
+    // OS: O DR
+    SETTINGS_ASSIST_GESTURE_TRAINING_INTRO = 991;
+
+    // OPEN: Assist Gesture training enrolling in Settings
+    // CATEGORY: SETTINGS
+    // OS: O DR
+    SETTINGS_ASSIST_GESTURE_TRAINING_ENROLLING = 992;
+
+    // OPEN: Assist Gesture training finished in Settings
+    // CATEGORY: SETTINGS
+    // OS: O DR
+    SETTINGS_ASSIST_GESTURE_TRAINING_FINISHED = 993;
 
     // OPEN: Settings > System > Languages & input > Assist gesture
     // CATEGORY: SETTINGS
@@ -3696,6 +3753,80 @@ enum PageId {
     // CATEGORY: SETTINGS
     // OS: U
     PRIVACY_CONTROLS = 1999;
+
+    // OPEN: Settings > System > Multi user > Add user > Grant admin privileges?
+    // CATEGORY: SETTINGS
+    // OS: U
+    DIALOG_GRANT_USER_ADMIN = 2000;
+
+    // OPEN: Settings > System > Multi user > User > Grant admin privileges (Toggle off)
+    // CATEGORY: SETTINGS
+    // OS: U
+    DIALOG_REVOKE_USER_ADMIN = 2001;
+
+    // OPEN: Settings > Display > Auto-rotate screen
+    // CATEGORY: SETTINGS
+    // OS: U
+    DISPLAY_DEVICE_STATE_AUTO_ROTATE_SETTINGS = 2002;
+
+    // OPEN: Settings > System > Touchpad
+    // CATEGORY: SETTINGS
+    // OS: U
+    SETTINGS_KEYBOARDS_TOUCHPAD = 2003;
+
+    // OPEN: Settings > System > Touchpad > Touchpad gestures
+    // CATEGORY: SETTINGS
+    // OS: U
+    SETTINGS_KEYBOARDS_TOUCHPAD_GESTURE = 2004;
+
+    // OPEN: Settings > Privacy & Security > More Settings
+    // CATEGORY: SETTINGS
+    // OS: U
+    MORE_SECURITY_PRIVACY_SETTINGS = 2005;
+
+    // OPEN: Settings > About phone > Device name > confirm dialog
+    // CATEGORY: SETTINGS
+    // OS: U
+    DIALOG_DEVICENAME_WARNING = 2006;
+
+    // OPEN: Settings > System > Language & input > Regional preferences
+    // CATEGORY: SETTINGS
+    // OS: U
+    REGIONAL_PREFERENCE = 2007;
+
+    // OPEN: Settings > Pick SIM dialog > Choose default data SIM
+    // CATEGORY: SETTINGS
+    // OS: U
+    DIALOG_AUTO_DATA_SWITCH = 2008;
+
+    // OPEN: Settings > System > Language & input > Regional preferences > Temperature
+    // CATEGORY: SETTINGS
+    // OS: U
+    TEMPERATURE_PREFERENCE = 2009;
+
+    // OPEN: Settings > System > Language & input > Regional preferences > Calendar
+    // CATEGORY: SETTINGS
+    // OS: U
+    CALENDAR_PREFERENCE = 2010;
+
+    // OPEN: Settings > System > Language & input > Regional preferences > First day of week
+    // CATEGORY: SETTINGS
+    // OS: U
+    FIRST_DAY_OF_WEEK_PREFERENCE = 2011;
+
+    // OPEN: Settings > System > Language & input > Regional preferences > Numbers
+    // CATEGORY: SETTINGS
+    // OS: U
+    NUMBERING_SYSTEM_LANGUAGE_SELECTION_PREFERENCE = 2012;
+
+    // OPEN: Settings > System > Language & input > Regional preferences > Numbers -> Languages
+    // CATEGORY: SETTINGS
+    // OS: U
+    NUMBERING_SYSTEM_NUMBER_FORMAT_SELECTION_PREFERENCE = 2013;
+
+    // OPEN: Settings > Developer Options > Snoop Logger Filters
+    // CATEGORY: SETTINGS
+    SETTINGS_SNOOP_LOGGER_DASHBOARD = 2014;
 }
 
 // Battery Saver schedule types.

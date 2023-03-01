@@ -16,35 +16,35 @@
 
 syntax = "proto2";
 
-package android.os.statsd.placeholder;
+package android.os.statsd.kernel;
 
-import "frameworks/proto_logging/stats/atoms.proto";
 import "frameworks/proto_logging/stats/atom_field_options.proto";
-import "frameworks/proto_logging/stats/attribution_node.proto";
 
-// This file contains sample extension atoms for reference.
+option java_package = "com.android.os.kernel";
+option java_multiple_files = true;
 
-message Atom9999 {
-    repeated AttributionNode attribution_node = 1;
-    optional int32 uid = 2 [(is_uid) = true];
-    optional int64 latency_millis = 3;
-
-    enum State {
-        UNKNOWN = 0;
-        OFF = 1;
-        ON = 2;
+/**
+ * Logs each kernel wakeup reason that caused a kernel wakeup with more detailed
+ * high level attribution information.
+ *
+ * Logged from:
+ *   frameworks/base/services/core/java/com/android/server/power/stats/CpuWakeupStats.java
+ */
+message KernelWakeupAttributed {
+    enum Type {
+        TYPE_UNKNOWN = 0;
+        TYPE_IRQ = 1;
     }
-    optional State state = 4;
 
-    optional string label = 5;
-}
+    // The type of kernel wakeup.
+    optional Type type = 1;
 
-message Atom99999 {
-    optional string label = 1;
-}
+    enum Reason {
+        UNKNOWN = 0;
+        ALARM = 1;
+    }
 
-extend Atom {
-    optional Atom9999 atom_9999 = 9999 [(module) = "placeholder"];
-
-    optional Atom99999 atom_99999 = 99999 [(module) = "placeholder"];
+    optional Reason reason = 2;
+    repeated int32 uids = 3 [(is_uid) = true];
+    optional int64 elapsed_millis = 4;
 }
