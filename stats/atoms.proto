@@ -987,8 +987,14 @@ message Atom {
     extensions 636; // QnsFallbackRestrictionChanged qns_fallback_restriction_changed
     extensions 638; // WifiAwareNdpReported wifi_aware_ndp_reported
     extensions 639; // WifiAwareAttachReported wifi_aware_attach_reported
+    extensions 640; // AdServicesMeasurementDebugKeys ad_services_measurement_debug_keys
     extensions 641; // MediaCodecStarted media_codec_started
     extensions 642; // MediaCodecStopped media_codec_stopped
+    extensions 645; // PermissionRationaleDialogViewed permission_rationale_dialog_viewed
+    extensions 646; // PermissionRationaleDialogActionReported permission_rationale_dialog_action_reported
+    extensions 647; // AppDataSharingUpdatesNotificationInteraction app_data_sharing_updates_notification_interaction
+    extensions 648; // AppDataSharingUpdatesFragmentViewed app_data_sharing_updates_fragment_viewed
+    extensions 649; // AppDataSharingUpdatesFragmentActionReported app_data_sharing_updates_fragment_action_reported
     extensions 9999; // Atom9999 atom_9999
 
     // Pulled events will start at field 10000.
@@ -10286,6 +10292,9 @@ message PermissionGrantRequestResultReported {
     }
     // The result of the permission grant
     optional Result result = 6;
+
+    // Whether Permission Rationale was shown on grant dialog
+    optional bool permission_rationale_shown = 7;
 }
 
 /**
@@ -12159,6 +12168,9 @@ message GrantPermissionsActivityButtonActions {
     // Selected precision of the location permission - bit flags indicate which
     // locations were chosen
     optional int32 selected_precision = 8;
+
+    // Whether Permission Rationale was shown on grant permission activity
+    optional bool permission_rationale_shown = 9;
 }
 
 /**
@@ -12235,6 +12247,8 @@ message AppPermissionFragmentActionReported {
         REVOKE_FINE_LOCATION = 8;
         // The user has selected photos/videos from the photo picker
         PHOTOS_SELECTED = 9;
+        // User selects Permission Rationale label
+        PERMISSION_RATIONALE = 10;
     }
 
     // Button pressed in the dialog
@@ -12256,6 +12270,9 @@ message AppPermissionFragmentViewed {
 
     // Permission group viewed
     optional string permission_group_name = 4;
+
+    // Whether Permission Rationale was shown on app permission fragment
+    optional bool permission_rationale_shown = 5;
 }
 
 /**
@@ -20928,6 +20945,32 @@ message ApplicationLocalesChanged {
     }
 
     optional Status status = 5;
+
+    // The caller where changes application locales.
+    enum Caller {
+        // A placeholder for unknown value.
+        CALLER_UNKNOWN = 0;
+
+        // The change was called from the delegate.
+        CALLER_DELEGATE = 1;
+
+        // The change was called from Apps.
+        CALLER_APPS = 2;
+
+        // The change was called from the system due to backup and restore.
+        CALLER_BACKUP_RESTORE = 3;
+
+        // The change was called from the system when the app languages
+        // feature or the set per-app locales was changed from opt-in to
+        // opt-out.
+        CALLER_APP_UPDATE_LOCALES_CHANGE = 4;
+
+        // The change was called from the system due to the dynamic locales
+        // change.
+        CALLER_DYNAMIC_LOCALES_CHANGE = 5;
+    }
+
+    optional Caller caller = 6;
 }
 
 /* Logs when the display HBM state changes.
@@ -23231,6 +23274,10 @@ message IwlanSetupDataCallResultReported {
   optional int32 handover_failure_mode = 15;
   // Retry duration
   optional int32 retry_duration_millis = 16;
+  // Iwlan error wrapped exception classname
+  optional string iwlan_error_wrapped_classname = 17;
+  // Iwlan error wrapped exception 1st line of stack trace
+  optional string iwlan_error_wrapped_stack_first_frame = 18;
 }
 
 /**
