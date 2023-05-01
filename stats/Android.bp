@@ -68,6 +68,7 @@ enum_protos = [
     "enums/telecomm/*.proto",
     "enums/telephony/*.proto",
     "enums/telephony/qns/*.proto",
+    "enums/telephony/satellite/*.proto",
     "enums/uwb/*.proto",
     "enums/view/**/*.proto",
     "enums/wear/media/*.proto",
@@ -121,9 +122,13 @@ atom_protos = [
     "atoms/media/*.proto",
     "atoms/adservices/*.proto",
     "atoms/wearpas/*.proto",
+    "atoms/telecomm/*.proto",
     "atoms/telephony/qns/*.proto",
+    "atoms/telephony/*.proto",
     "atoms/memorysafety/*.proto",
     "atoms/wifi/*.proto",
+    "atoms/telephony/satellite/*.proto",
+    "atoms/automotive/caruilib/*.proto",
 ]
 
 cc_library_host_shared {
@@ -132,6 +137,10 @@ cc_library_host_shared {
         "atom_field_options.proto",
         ":libstats_atom_message_protos",
     ] + enum_protos + atom_protos,
+
+    cflags: [
+        "-Wno-deprecated-declarations",
+    ],
 
     proto: {
         type: "full",
