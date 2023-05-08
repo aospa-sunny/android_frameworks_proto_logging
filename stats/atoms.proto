@@ -25,9 +25,6 @@ option java_outer_classname = "AtomsProto";
 import "frameworks/proto_logging/stats/attribution_node.proto";
 import "frameworks/proto_logging/stats/atoms/adpf/adpf_atoms.proto";
 import "frameworks/proto_logging/stats/atoms/agif/agif_atoms.proto";
-import "frameworks/proto_logging/stats/atoms/art/art_atoms.proto";
-import "frameworks/proto_logging/stats/atoms/art/background_dexopt_atoms.proto";
-import "frameworks/proto_logging/stats/atoms/art/odrefresh_atoms.proto";
 import "frameworks/proto_logging/stats/atoms/corenetworking/connectivity/connectivity_atoms.proto";
 import "frameworks/proto_logging/stats/atoms/display/display_atoms.proto";
 import "frameworks/proto_logging/stats/atoms/dnd/dnd_atoms.proto";
@@ -48,6 +45,7 @@ import "frameworks/proto_logging/stats/atoms/view/inputmethod/inputmethod_atoms.
 import "frameworks/proto_logging/stats/atom_field_options.proto";
 import "frameworks/proto_logging/stats/enums/adservices/fledge/enums.proto";
 import "frameworks/proto_logging/stats/enums/anr/enums.proto";
+import "frameworks/proto_logging/stats/enums/adservices/measurement/enums.proto";
 import "frameworks/proto_logging/stats/enums/app/enums.proto";
 import "frameworks/proto_logging/stats/enums/app/job/enums.proto";
 import "frameworks/proto_logging/stats/enums/app/remoteprovisioner_enums.proto";
@@ -64,6 +62,7 @@ import "frameworks/proto_logging/stats/enums/bluetooth/leaudio/enums.proto";
 import "frameworks/proto_logging/stats/enums/bluetooth/smp/enums.proto";
 import "frameworks/proto_logging/stats/enums/contexthub/enums.proto";
 import "frameworks/proto_logging/stats/enums/debug/enums.proto";
+import "frameworks/proto_logging/stats/enums/display/enums.proto";
 import "frameworks/proto_logging/stats/enums/hardware/biometrics/enums.proto";
 import "frameworks/proto_logging/stats/enums/jank/enums.proto";
 import "frameworks/proto_logging/stats/enums/media/audio/enums.proto";
@@ -184,7 +183,7 @@ message Atom {
         PluggedStateChanged plugged_state_changed = 32
                 [(module) = "framework", (module) = "statsdtest"];
         InteractiveStateChanged interactive_state_changed = 33 [(module) = "framework"];
-        TouchEventReported touch_event_reported = 34;
+        input.TouchEventReported touch_event_reported = 34;
         WakeupAlarmOccurred wakeup_alarm_occurred = 35 [(module) = "framework"];
         KernelWakeupReported kernel_wakeup_reported = 36 [(module) = "framework"];
         WifiLockStateChanged wifi_lock_state_changed = 37 [(module) = "wifi"];
@@ -376,7 +375,7 @@ message Atom {
                 175 [(module) = "sysui"];
         sysui.AssistGestureProgressReported assist_gesture_progress_reported =
                 176 [(module) = "sysui"];
-        TouchGestureClassified touch_gesture_classified = 177 [(module) = "framework"];
+        input.TouchGestureClassified touch_gesture_classified = 177 [(module) = "framework"];
         HiddenApiUsed hidden_api_used = 178 [(module) = "framework"];
         StyleUIChanged style_ui_changed = 179 [(module) = "sysui", (module) = "wallpaper"];
         PrivacyIndicatorsInteracted privacy_indicators_interacted =
@@ -597,7 +596,6 @@ message Atom {
         PerfettoTrigger perfetto_trigger = 329 [(module) = "perfetto"];
         TranscodingData transcoding_data = 330 [(module) = "mediaprovider"];
         ImsServiceEntitlementUpdated ims_service_entitlement_updated = 331 [(module) = "imsentitlement"];
-        art.ArtDatumReported art_datum_reported = 332 [(module) = "art"];
         DeviceRotated device_rotated = 333 [(module) = "framework"];
         SimSpecificSettingsRestored sim_specific_settings_restored = 334
             [(module) = "telephony"];
@@ -638,7 +636,6 @@ message Atom {
         FdtrackEventOccurred fdtrack_event_occurred = 364 [(module) = "framework"];
         TimeoutAutoExtendedReported timeout_auto_extended_reported = 365
             [(module) = "framework"];
-        art.OdrefreshReported odrefresh_reported = 366 [(module) = "art"];
         AlarmBatchDelivered alarm_batch_delivered = 367 [(module) = "framework"];
         AlarmScheduled alarm_scheduled = 368 [(module) = "framework"];
         CarWatchdogIoOveruseStatsReported car_watchdog_io_overuse_stats_reported = 369 [(module) = "car"];
@@ -765,7 +762,6 @@ message Atom {
         RemoteKeyProvisioningTiming remote_key_provisioning_timing = 465 [(module) = "rkpd"];
         sysui.MediaOutputOpInteractionReported mediaoutput_op_interaction_report =
             466 [(module) = "sysui"];
-        art.BackgroundDexoptJobEnded background_dexopt_job_ended = 467 [(module) = "art"];
         SyncExemptionOccurred sync_exemption_occurred = 468 [(module) = "framework"];
         AutofillPresentationEventReported autofill_presentation_event_reported = 469 [(module) = "framework"];
         DockStateChanged dock_state_changed = 470 [(module) = "framework"];
@@ -876,11 +872,9 @@ message Atom {
         PackageManagerAppsFilterCacheUpdateReported
             package_manager_apps_filter_cache_update_reported = 546 [(module) = "framework"];
         sysui.LauncherImpressionEvent launcher_impression_event = 547 [(module) = "sysui"];
-        art.OdsignReported odsign_reported = 548 [(module) = "art"];
         WearMediaOutputSwitcherAllDevicesScanLatency
             wear_media_output_switcher_all_devices_scan_latency =
                 549 [(module) = "MediaOutputSwitcher"];
-        art.ArtDeviceDatumReported art_device_datum_reported = 550 [(module) = "art"];
         WsWatchFaceEdited ws_watch_face_edited = 551 [(module) = "wearservices"];
         WsWatchFaceFavouriteActionReported ws_watch_face_favorite_action_reported = 552 [(module) = "wearservices"];
         WsWatchFaceSetActionReported ws_watch_face_set_action_reported = 553 [(module) = "wearservices"];
@@ -895,7 +889,6 @@ message Atom {
         NfcReaderConflictOccurred nfc_reader_conflict_occurred = 562 [(module) = "nfc"];
         WsTileListChanged ws_tile_list_changed = 563 [(module) = "wearservices"];
         GetTypeAccessedWithoutPermission get_type_accessed_without_permission = 564[(module) = "framework"];
-        art.ArtDatumDeltaReported art_datum_delta_reported = 565 [(module) = "art"];
         MobileBundledAppInfoGathered mobile_bundled_app_info_gathered = 566 [(module) = "framework"];
         WsWatchFaceComplicationSetChanged ws_watch_face_complication_set_changed = 567 [(module) = "wearservices"];
         media.MediaDrmCreated media_drm_created = 568 [(module) = "media_metrics"];
@@ -934,7 +927,7 @@ message Atom {
         wearsysui.WearOobeStateChanged wear_oobe_state_changed = 595 [(module) = "framework"];
         wearservices.WsNotificationUpdated ws_notification_updated = 596
             [(module) = "wearservices"];
-        display.ScreenBrightnessChangedV2 screen_brightness_changed_v2 = 597 [(module) = "framework"];
+        // reserved 597
         corenetworking.connectivity.NetworkValidationFailureStatsDailyReported
             network_validation_failure_stats_daily_reported = 601 [(module) = "connectivity"];
         wearservices.WsComplicationTapped ws_complication_tapped = 602 [(module) = "wearservices"];
@@ -945,7 +938,13 @@ message Atom {
 
     // Pushed atom extensions.
     // The atom definitions are under atoms/<feature>/<feature>_extension_atoms.proto
+    extensions 332; // ArtDatumReported art_datum_reported
+    extensions 366; // OdrefreshReported odrefresh_reported
+    extensions 467; // BackgroundDexoptJobEnded background_dexopt_job_ended
     extensions 528; // ExpressEventReported express_event_reported
+    extensions 548; // OdsignReported odsign_reported
+    extensions 550; // ArtDeviceDatumReported art_device_datum_reported
+    extensions 565; // ArtDatumDeltaReported art_datum_delta_reported
     extensions 585; // CredentialManagerApiCalled credential_manager_api_called
     extensions 593; // ExpressHistogramSampleReported express_histogram_sample_reported
     extensions 598; // AdServicesBackCompatGetTopicsReported ad_services_back_compat_get_topics_reported
@@ -1014,6 +1013,16 @@ message Atom {
     extensions 664; // RkpdPoolStats rkpd_pool_stats
     extensions 665; // RkpdClientOperation rkpd_client_operation
     extensions 666;  // RestrictedBluetoothDeviceNameReported restricted_bluetooth_device_name_reported
+    extensions 667; // CredentialManagerAverageCandidateReported credential_manager_average_reported
+    extensions 668; // CredentialManagerFinalNoUidReported credential_manager_finalnouid_reported
+    extensions 669; // CredentialManagerGetProviderReported credential_manager_get_reported
+    extensions 670; // CredentialManagerBrowsedAuthenticationClicked credential_manager_auth_click_reported
+    extensions 671; // CredentialManagerApiV2Called credential_manager_apiv2_called
+    extensions 672; // TestRestrictedAtomReported test_restricted_atom_reported
+    extensions 673; // AdServicesMeasurementDelayedSourceRegistration ad_services_measurement_delayed_source_registration
+    extensions 674; // AdServicesMeasurementAttribution ad_services_measurement_attribution
+    extensions 675; // AdServicesMeasurementJobs ad_services_measurement_jobs
+    extensions 676; // AdServicesMeasurementWipeout ad_services_measurement_wipeout
     extensions 9999; // Atom9999 atom_9999
 
     // Pulled events will start at field 10000.
@@ -1241,13 +1250,14 @@ message Atom {
     extensions 10185; // SatelliteOutgoingDatagram satellite_outgoing_datagram
     extensions 10186; // SatelliteProvision satellite_provision
     extensions 10187; // SatelliteSosMessageRecommender satellite_sos_message_recommender
+    extensions 10188; // UwbActivityInfo uwb_activity_info
     extensions 10189; // CachedAppsHighWaterMark cached_apps_high_watermark
     extensions 99999; // Atom99999 atom_99999
 
     // DO NOT USE field numbers above 100,000 in AOSP.
     // Field numbers 100,000 - 199,999 are reserved for non-AOSP (e.g. OEMs) to use.
     // Field numbers 200,000 and above are reserved for future use; do not use them at all.
-    reserved 83, 360 to 363, 492, 10008, 10036, 10040, 10041, 21004, 21005;
+    reserved 83, 360 to 363, 492, 597, 10008, 10036, 10040, 10041, 21004, 21005;
 }
 
 /*
@@ -2142,7 +2152,7 @@ message DeferredJobStatsReported {
  *   frameworks/base/services/core/java/com/android/server/job/JobSchedulerService.java
  *   frameworks/base/services/core/java/com/android/server/job/JobServiceContext.java
  *
- * Next tag: 39
+ * Next tag: 40
  */
 message ScheduledJobStateChanged {
     repeated AttributionNode attribution_node = 1;
@@ -2270,6 +2280,9 @@ message ScheduledJobStateChanged {
     // The number of JobWorkItems the app has attached to this job but not completed
     // (by calling JobParameters.completeWork()).
     optional int32 num_uncompleted_work_items = 38;
+
+    // Proc state of the UID of the logged event
+    optional android.app.ProcessStateEnum proc_state = 39 [default = PROCESS_STATE_UNKNOWN];
 }
 
 /**
@@ -4492,68 +4505,6 @@ message SettingsUIChanged {
 }
 
 /**
- * Logs basic timing information about touch events.
- * Reported at most every 5 minutes while device is being interacted with.
- *
- * Logged from:
- *   frameworks/native/services/inputflinger
- */
-message TouchEventReported {
-    /**
-     * The fields latency_{min|max|mean|stdev} represent minimum, maximum, mean,
-     * and the standard deviation of the time spent processing touchscreen events
-     * in the kernel and inputflinger. The units are microseconds.
-     *
-     * On supported devices, the starting point is taken during the hard interrupt inside the
-     * kernel touch driver. On all other devices, the starting point is taken inside
-     * the kernel's input event subsystem upon receipt of the input event.
-     * The ending point is taken inside InputDispatcher, just after the input event
-     * is sent to the app.
-     */
-    // Minimum value
-    optional float latency_min_micros = 1;
-    // Maximum value
-    optional float latency_max_micros = 2;
-    // Average value
-    optional float latency_mean_micros = 3;
-    // Standard deviation
-    optional float latency_stdev_micros = 4;
-    // Number of touch events (input_event) in this report
-    optional int32 count = 5;
-}
-
-/**
- * Logs gesture classification and timing information for touch events.
- *
- * Logged from:
- *   frameworks/base/core/java/android/view/GestureDetector.java
- *   frameworks/base/core/java/android/view/View.java
- */
-message TouchGestureClassified {
-    // The source of the classification (e.g. Java class name).
-    optional string source = 1;
-
-    enum Classification {
-        UNKNOWN_CLASSIFICATION = 0;
-        SINGLE_TAP = 1;
-        DOUBLE_TAP = 2;
-        LONG_PRESS = 3;
-        DEEP_PRESS = 4;
-        SCROLL = 5;
-    }
-    // The classification of the gesture.
-    optional Classification classification = 2;
-
-    // The interval from the start of a touch event stream until the
-    // classification was made.
-    optional int32 latency_millis = 3;
-
-    // The distance from the location of the first touch event to the
-    // location of the touch event when the classification was made.
-    optional float displacement_px = 4;
-}
-
-/**
  * Logs that a setting was updated.
  * Logged from:
  *   frameworks/base/packages/SettingsProvider/src/com/android/providers/settings/SettingsState.java
@@ -5469,6 +5420,23 @@ message ForegroundServiceStateChanged {
     repeated ApiType api_type = 22;
 
     repeated int64 api_timestamp = 23;
+
+    // Keep it in sync with ActivityManager.ProcessCapability.
+    enum ProcessCapability {
+        PROCESS_CAPABILITY_NONE = 0;
+        PROCESS_CAPABILITY_FOREGROUND_LOCATION = 1;
+        PROCESS_CAPABILITY_FOREGROUND_CAMERA = 2;
+        PROCESS_CAPABILITY_FOREGROUND_MICROPHONE = 4;
+        PROCESS_CAPABILITY_POWER_RESTRICTED_NETWORK = 8;
+        PROCESS_CAPABILITY_BFSL = 16;
+        PROCESS_CAPABILITY_USER_RESTRICTED_NETWORK = 32;
+    }
+
+    optional android.app.ProcessStateEnum serviceUidState = 24 [default = PROCESS_STATE_UNKNOWN];
+    optional ProcessCapability serviceUidCapabilities = 25;
+
+    optional android.app.ProcessStateEnum callintUidState = 26 [default = PROCESS_STATE_UNKNOWN];
+    optional ProcessCapability callintUidCapabilities = 27;
 }
 
 /**
@@ -10640,7 +10608,10 @@ message ScheduledJobConstraintChanged {
  *     frameworks/base/services/core/java/com/android/server/job/controllers/<*>.java
  */
 message DeviceWideJobConstraintChanged {
-    optional com.android.server.job.ConstraintEnum constraint = 1;
+    optional com.android.server.job.ConstraintEnum constraint = 1 [
+        (state_field_option).primary_field = true,
+        (is_uid) = false
+    ];
 
     enum State {
         UNKNOWN = 0;
@@ -10906,6 +10877,15 @@ message MediaCodecReported {
     // more codec configuration parameters.
     // @since U
     optional int64 codec_id = 67;
+    optional int32 array_mode = 68;
+    optional int32 operation_mode = 69;
+    optional int32 output_surface = 70;
+    optional int32 app_max_input_size = 71;
+    optional int32 used_max_input_size = 72;
+    optional int32 codec_max_input_size = 73;
+    optional int32 flush_count = 74;
+    optional int32 set_surface_count = 75;
+    optional int32 resolution_change_count = 76;
     // !!! WARNING
     // Keep synchronized with MediametricsCodecReported.CodecData in
     // mediametrics_message.proto.
@@ -16117,6 +16097,7 @@ message UserLifecycleJourneyReported {
     optional UserType user_type = 5;
     // What are the flags attached to the target user
     optional int32 user_flags = 6;
+    optional int32 error_code = 7;
 }
 
 /**
@@ -16158,6 +16139,7 @@ message UserLifecycleEventOccurred {
         ERROR = 4;
     }
     optional State state = 4; // Represents the state of an event (beginning/ending)
+    optional int32 error_code = 5;
 }
 
 /**
@@ -20876,6 +20858,9 @@ message PerSimStatus {
     // Indicates the unmetered networks
     // Bitmask is encoded as TelephonyManager#NetworkTypeBitMask.
     optional int64 unmetered_networks = 17;
+
+    // Indicates whether VoNR is enabled
+    optional bool vonr_enabled = 18;
 }
 
 /*
@@ -21603,6 +21588,10 @@ message AdServicesMeasurementReportsUploaded {
     }
 
     optional ReportUploadStatus response_code = 2;
+    optional android.adservices.service.measurement.ReportUploadFailureType failure_type = 3;
+    optional android.adservices.service.measurement.ReportUploadMethod upload_method = 4;
+    // delay (in milliseconds) between scheduled delivery time and actual delivery time.
+    optional int64 reporting_delay_millis = 5;
 }
 
 /**
@@ -21618,6 +21607,12 @@ message AdServicesMeasurementRegistrations {
     optional RegistrationType type = 1;
     optional int64 response_size_in_bytes = 2;
     optional string adtech_url_domain_if_size_above_threshold = 3;
+    optional android.adservices.service.measurement.SourceType source_type = 4;
+    optional android.adservices.service.measurement.RegistrationSurfaceType surface_type = 5;
+    optional android.adservices.service.measurement.Status status = 6;
+    optional android.adservices.service.measurement.RegistrationFailureType failure_type = 7;
+    // delay (in milliseconds) between registration queue request and the time it gets processed
+    optional int64 registration_delay_millis = 8;
 }
 
 /**
@@ -22969,8 +22964,53 @@ message DisplayBrightnessChanged {
     // Whether adaptive brightness is enabled.
     optional bool adaptive_brightness_enabled = 10;
 
+    // Historical: replaced by entire_reason after 2023-04-10
+    optional Reason reason = 11 [deprecated = true];
+
     // Reason that triggered the brightness event to occur.
-    optional Reason reason = 11;
+    optional android.display.DisplayBrightnessChangeReasonEnum entire_reason = 12;
+
+    // New brightness bucket index, from frameworks/proto_logging/stats/enums/display/enums.proto.
+    optional android.display.DisplayBrightnessRangeEnum bucket_index = 13;
+
+    // Brightness is at maximum allowable value regarding the current context.
+    optional bool brightness_at_max = 14;
+
+    // Whether HBM mode is enabled due to sunlight
+    optional bool hbm_mode_sunlight = 15;
+
+    // Whether HBM mode is enabled due to HDR
+    optional bool hbm_mode_hdr = 16;
+
+    // Whether modified by low power mode.
+    optional bool modified_by_low_power_mode = 17;
+
+    // Value defined in frameworks/base/core/java/android/hardware/display/BrightnessInfo.java
+    // BRIGHTNESS_MAX_REASON_NONE = 0
+    // BRIGHTNESS_MAX_REASON_THERMAL = 1
+    // BRIGHTNESS_MAX_REASON_* defined in the future
+    optional int32 throttling_reason = 18;
+
+    // Whether modified by dimming.
+    optional bool modified_by_dimming = 19;
+
+    // Whether Reduce Bright Colors (RBC) is enabled.
+    optional bool rbc_enabled = 20;
+
+    // Whether ambient lux is invalid.
+    optional bool ambient_lux_invalid = 21;
+
+    // Whether doze scale applied for auto brightness.
+    optional bool doze_scale_applied = 22;
+
+    // Whether the value is set by the user.
+    optional bool set_by_user = 23;
+
+    // Whether idle mode is active.
+    optional bool idle_mode_active= 24;
+
+    // Whether low power mode is enabled.
+    optional bool low_power_mode_enabled= 25;
 }
 
 
