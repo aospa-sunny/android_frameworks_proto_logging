@@ -1223,6 +1223,10 @@ enum Action {
     // VALUE: 1 for language changed, 0 for not changed
     // OS: U
     ACTION_CHANGE_LANGUAGE = 1834;
+
+    // ACTION: A group tile in Settings information architecture is added to the screen
+    // OS: U
+    ACTION_SETTINGS_GROUP_TILE_ADDED_TO_SCREEN = 1835;
 }
 
 /**
@@ -3639,6 +3643,12 @@ enum PageId {
     SETTINGS_LANGUAGES_CATEGORY = 1950;
 
     // OPEN: Settings > System > Keyboard > Physical keyboard
+    //       > Show enabled input method locales page > Show keyboard layout picker title
+    // CATEGORY: SETTINGS
+    // OS: U
+    SETTINGS_KEYBOARDS_LAYOUT_PICKER_TITLE = 1957;
+
+    // OPEN: Settings > System > Keyboard > Physical keyboard
     //       > Show enabled input method locales page > Show keyboard layout picker page
     // CATEGORY: SETTINGS
     // OS: U
@@ -3978,10 +3988,10 @@ enum PageId {
     // OS: U
     HEARING_AID_PAIRING = 2025;
 
-    // OPEN: Settings > Connected devices > (click on details link for a paired device) > Audio output
+    // OPEN: Settings > Accessibility > Hearing devices > Audio output
     // CATEGORY: SETTINGS
     // OS: U
-    BLUETOOTH_AUDIO_ROUTING = 2026;
+    HEARING_AID_AUDIO_ROUTING = 2026;
 
     // OPEN: Settings > Accessibility > Flash notifications
     // OPEN: Settings > Notifications > Flash notifications
