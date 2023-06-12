@@ -1899,6 +1899,8 @@ message WifiP2pConnectionReported {
     // fallback to negotiation if device receives invitation response status code "information is
     // currently unavailable"
     optional bool fallback_to_negotiation_on_invite_status_info_unavailable = 11;
+    // The try count of connection
+    optional int32 try_count = 12;
 }
 
 /**
@@ -5412,9 +5414,9 @@ message ForegroundServiceStateChanged {
         CDM = 9;
     }
 
-    optional ApiType api_type = 22;
+    repeated ApiType api_type = 22;
 
-    optional int64 api_timestamp = 23;
+    repeated int64 api_timestamp = 23;
 
     optional int64 api_before_fgs_start_duration = 28;
 
@@ -23401,6 +23403,7 @@ message HearingAidInfoReported {
         ACCESSIBILITY_HEARING_AIDS = 1;
         ACCESSIBILITY_HEARING_AID_PAIR_ANOTHER = 2;
         BLUETOOTH = 3;
+        ACCESSIBILITY_HEARING_AID_SETTINGS = 4;
     }
     optional BondEntry bond_entry = 3;
 }
