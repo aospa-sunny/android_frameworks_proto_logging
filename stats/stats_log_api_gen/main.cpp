@@ -15,6 +15,7 @@
 #include "frameworks/proto_logging/stats/attribution_node.pb.h"
 #include "java_writer.h"
 #include "java_writer_q.h"
+#include "java_writer_vendor.h"
 #include "native_writer.h"
 #include "native_writer_vendor.h"
 #include "rust_writer.h"
@@ -372,7 +373,7 @@ static int run(int argc, char const* const* argv) {
             return 1;
         }
 
-        if (moduleName.empty()) {
+        if (moduleName.empty() || moduleName == DEFAULT_MODULE_NAME) {
             fprintf(stderr, "Must supply --module if supplying a Java filename");
             return 1;
         }
